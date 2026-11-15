@@ -1,0 +1,701 @@
+para vocês. Eh, eu tava vendo o conteúdo e realmente foi muito conteúdo. Realmente foi muito conteúdo. Foi conteúdo para caramba, tá? Em termos de prova, ainda não fiz a prova, mas com certeza vai est no mesmo nível do que a próxima. Ou seja, o que a gente falar aqui em termos de exercício, o que vocês virem em termos de lista de exercício, vai tá mais ou menos similar, tá? Alguns valores né, professor? 
+
+Oi. Valores. 
+
+Oi. 
+
+Só muda os valores, né? 
+
+Ah, são os valores. 
+
+Para que mudar valor? 
+
+Só muda o valor de nota. 
+
+Tá, gente? Então, fazendo aqui uma visão geral aqui de tópicos que a gente viu, né? Então, a gente começou ali depois que a gente terminou aquela parte escrevido, a gente falou sobre programação paralela, né? Então, a gente falou sobre qual que é a ideia geral, quais são os padrões que a gente vê programação paralela, né? Sobre o que que é decomposição. de dados, tarefas, balanceamento de carga e daí a gente viu lá como fazer a programação paralela em Java, né? Então esse era um dos tópicos. Vou passar pelos tópicos primeiros, depois a gente vai fazendo os exercícios, tá? Eh, depois a gente passou pro tático sobre eh arquivos distribuídos biga, né? Mais big data, na verdade, né? Então, a gente falou sobre o que que é big data, quais são os conceitos, né? Passamos pro CADUP, HDFS, introdução, programa funcionava com escala e depois a gente chegou no Spark, né? Então a gente viu tanto a parte de execução quanto a programação e sparkle. E por fim, essas últimas duas semanas a gente tem visto introdução a processamento de consulta, né? Então aquele passo a passo eh do processamento de consulta, introdução algebra relacional, otimização de consulta baseada em orísticas e a ideia geral baseada em custo que que é estimativo de cardinalidade e quais são os principais mais algoritmos de junção. Então esse são todos os conteúdos que a gente enviu. É bastante coisa, obviamente tem muita coisa aqui de da parte principalmente prática, de programação paralela, que vocês estão utilizando no trabalho, tá? Então assim, eh, qual que é a minha ideia? Essa parte mais de decomposição de dados, decomposição de tarefas, eh, na prova, a ideia é cobrar de uma forma um pouco mais te Porque vocês já estão fazendo a parte prática através do trabalho, tá? Então vamos começar surpreendente. 
+
+Oi você é surpreendente. Eu tinha certeza que você ia falar essa parte aí que eu não vou cobrar de certeza. 
+
+Você vê, né? Que né? 
+
+Que surpresa. Ok, gente, 
+
+eu achei que ia falar: "Ah, não, eu vou cobrar parecido com os trabalhos". Não, foi pior ainda. Cobrar só a parte teórica, n? É, gente, até a parte teórica que que é que é conceito, o que que é a ideia, qual que é a definição das coisas, vocês precisam entender, vocês precisam saber da definição porque vocês já tod sentido. 
+
+Ótimo. 
+
+Certo. 
+
+Tá bom. 
+
+Não, a gente só tá aceitando só agora que não tem. 
+
+É, não custa pedir, né? 
+
+É. Então tá, gente, vamos fazendo uma revisão, a gente vai fazendo exercício no meio também. Então, o que que a gente viu lá sobre a programação paralela? Que primeiro a gente a gente tem um problema para solucionar e a ideia é que a gente vai fazer a decomposição desse problema eh em tarefas um pouquinho menores. E essas são as tarefas que a gente pode executar elas de forma paralela, certo? A partir do momento que a gente faz essa decomposição do livro de algoritmo mesmo, de estrutura do algoritmo, daí sim a gente consegue mapear cada uma daquelas tarefas eh para a forma que vai ser executada no seu computador, no seu ambiente e seja distribuído o local, né? Que geralmente o que que a gente faz? Geralmente é jogar para uma trads lá no executor service que a gente viu do Jack. Então aquilo lá é a fase de mapeamento e daí o que você tá utilizando vai cuidar da execução distribuída, né, 
+
+professora? 
+
+Sim. 
+
+O que que é o termo que você tinha colocado? Tá slide lá. 
+
+Pick a turb. I have to pick a turb. 
+
+Ah, tá. Aqui ele colocou aqui parallel trads or workers. É que eu retirei essa imagem aqui. Aliás, fica de dica, gente. Pessoal que quer ver programação paralela bem a fundo, tem um curso de Stanford bem legal. Eh, parte desses slides eu peguei de lá deles, até toda vez tá ali, né? Então, tem um curso de Stanford que vai bem a fundo sua programação paralela, né? E é essa imagem é deles, tá? Então, é por conta disso. Mas é sobre parads ou workers, né, que é sobre qual que é a unidade que vai executar de fato a sua subtarefa. Por isso que ele falou, ele vou, eu tinha que selecionar um termo, tá? OK. Depois o que que a gente viu, né, que a gente tem basicamente quatro passos eh baseados lá no livro sobre padrões de algoritmos paralelos, que a gente tem basicamente quatro passos para implementar um programa de forma paralela. né? E a gente viu duas delas de forma um pouquinho mais aprofundada, né? Tanto a parte de identificação do paralelismo quanto a parte do estrutura do algoritmo, né? Então, a identificação do paralelismo estão formas de você verificar quais tarefas eu posso eh executar de forma paralela. E a estrutura do algoritmo é baseada nessa peti decomposição com a estrutura do algoritmo que eu vou utilizar, né? Então, essa é a parte mais conceitual, vamos dizer assim, né? Então ali na decomposição, na identificação do paralelismo, a gente teria a decomposição de dados, a decomposição de tarefas, né? E também tem uma análise de dependência. Aqui ele coloca três eh padrões, mas a gente viu como fazer isso através de um gráfico de dependência das tarefas, certo? Tá? Então essa é a parte identificação do paralelismo. E depois a gente viu que baseado em como a gente vai organizar, que a gente viu o passo acima, quais são as formas de implementar de fato, eh, de estruturar o algoritmo, não implementar de fato, mas de estruturar o algoritmo além delas, tá? OK, né? Então, só lembrando lá que a gente tinha daí o paralelismo. Ah, tá. Não, isso daqui é Tá? Então agora vamos passar para um exercício. Como que eu poderia cobrar esse tipo de coisa na prova? Um tipo de exercício, por exemplo, em programação paralela existem principalmente duas abordagens para decompor o problema e executá-la de forma paralela. A decomposição de dados e a decomposição de tarefas, né? Defina ambos os conceitos, né? Então, lembrando, o que que é a decomposição de dados, né? Então, ela consiste em dividir grandes conjuntos de dados como vetores, matrizes ou imagens em pedaços menores e independentes, né? E cada unidade de processamento recebe uma parte desses dados. Então, lembra lá daquela daquele nosso exemplo lá do vetor, né? A gente tava fazendo uma decomposição de dados, por a gente tava dividindo o vetor em vários pedaços de dados e mandando eles para cada uma das suas da unidade de execução para fazer A prece ali de fato, né? E a decomposição de tarefas, ela consiste em dividir o problema com foco nas ações, funções ou etapas que precisam ser realizadas, independentemente dos dados, né? O problema é quebrado em várias tarefas distintas que podem ser executadas ao mesmo tempo por diferentes processadores. Então aqui, eh, a diferença dos dois é, um, eu tô quebrando os dados de fato, o outro eu tô quebrando quais as minhas tarefas, pequenas funções ali da programa. paralela que eu consigo identificar e ser utilizado. E daí vem aquilo, qual que eu uso na prática? Cada um tem os seus casos, mas muitas vezes a gente pode às vezes aplicar os dois pra prática de fato, tá? Eh, então quando eu falo de perguntas conceituais, esse tipo de coisa, tá? Então, por exemplo, ah, qual que é a diferença entre fazer uma decomposição eh em bloco para uma decomposição com o bloco eh eh uma decomposição geométrica, qual que é qual que é a qual que é a ideia ali, né? Então esse tipo de coisa, né? Então fazer falar sobre as diferentes decomposições, tá? Então o que que eu quero que você que eu lembro que vocês lembrem por aqui? Então voltando aqui nos slides que eu tinha antes, tá? Eu quero que vocês lembrem da parte de decomposição de de dados de tarefas. O 15 é a definição dos dois, quando os dois podem ser utilizados também, né? Às vezes um exemplo de quando eles podem ser utilizados, quanto que eles podem ser adequados e depois na parte de estrutura do algoritmo, principalmente eh focado nessa parte de organização por dados ou eh tarefas, né, e que a gente tinha diferentes formas de estruturar o nosso algoritmo, né? Então, nós tínhamos, por exemplo, quando eu tô organizando, fazendo aquela minha decomposição por tarefas, eu tenho eh o t paralelismo, né? Então, paralelismo baseado em tarefas. Que que era? Era realmente identificar as tarefas que podem ser paralelas de forma meio que previamente definida, estática. Entra daqueles problemas que só da gente olhar pro problema você já consegue identificar de cara quais quais tarefas. podem ser eh executadas de forma paralela, né? O como é que como é que é? 
+
+Vergonhosamente paralelo. 
+
+Isso. Exatamente. Então esse é o tipo de problema que a gente tinha com técnicolismo, né? E depois a gente tinha o divisor e conquista. Quando que a gente utiliza divisão e conquista? Primeiro, quando a gente tem eh essas tarefas podem ser criadas teoricamente e quando a gente tem realmente aquele padrão utilizando conquista que vocês provavelmente viram lá em algoritmos ou não sei onde é que vocês viram, né, que você pode ir dividindo os uma tarefa maior, várias subtarefas e no final juntar todo o resultado, né? Então, lembra que essas são duas estruturas de algoritmos ali que a gente pode utilizar. E daí quando a gente fala sobre decomposição de dados, daí a gente faz uma decomposição que pode ser geométrica, Ou seja, geralmente a a a um exemplo bom é o de imagem. Nós temos uma imagem, temos que executar uma contagem de, sei lá, eh, contagem de cada cor e que temos na imagem. Por exemplo, essa decomposição geométrica, a gente pode geometricamente definir como a gente vai particionar aqueles dados da imagem, né? Então, pensa lá que a gente teria Eso que tem o overlap, né? 
+
+É o overlap, eu vou falar mais paraa frente, né? A gente poderia decompor dessa forma aqui, certo? É uma decomposição geométrica, porque eu tô geometricamente decomendo uma decomposição dos meus dados. Quando que eu uso a ideia de decomposição geométrica? Geralmente quando eu tenho problemas eh não recursivos, até mesmo porque uma outra estrutura desse tipo de decomposição é sobre dados recursivos. Então, quando eu tenho um problema que recursivamente eu não vou resolver e a gente consegue e quando geralmente a gente tá lidando com uma estrutura de dados que a gente consegue realmente fazer esse tipo de decomposição. Em geral, pensando, né? Então, pensa aí nas estruturas de dados, um vetor, uma matriz, a gente consegue fazer tipo de decomposição que depois a gente tem, né? Decomposição em blocos, decomposição baseada no elétrico, tá? Os tipos de decomposição aqui dentro que a gente fala lá quando a gente fala sobrecimento de caras, tá? Então aqui é só a parte de decomposição eh geométrica mesmo, ok? Daí o segundo é outra parte de decomposição de dados. Eu tenho a decomposição por eh por dados recursivos, né? Então, quando eu tô lidando, por exemplo, com uma árvore, com um grafo que você precisa de recursividade para basicamente utilizar estrutura de dados, geralmente são problemas que a gente pode resolver utilizando essa estrutura de eh dados recursivos para paralelismo, tá? Então assim, lembrem desses tipos de conceito eh que eu vou cobrar mais ou menos nesse livro, tá? De definição, como utiliza e o que que significa. OK? Agora uma coisa falar é sobre criar o gráfico de dependência. Então, se a gente precisa verificar quais tarefas eh a gente pode verificar de forma paralela, uma das sortes da gentear isso é justamente criando um gráfico de independência sobre essas tarefas do meu programa. Então vamos lá no exercício, né? Considerando, deixa eu ir para cá que eu tá? Então, considerando o programa baixo iniciando o código, construa o gráfico de dependência de tarefas, identifique quais tarefas podem ser executadas em paralelo e com base nessa análise, indique qual padrão de estrutura de algoritmo deve ser utilizado para implementá-lo de forma paralelo, né? Então esse daqui é o meu segundo código. Vamos fazer junto, gente. 
+
+OK. Então, se do código, eu tenho lá o algoritmo processo vendas. Daí já tá ali por tarefa, tá? Então, a tarefa um, eu vou filtrar vendas válidas. Então, eu vou ter aqui um nozinho de, OK? Depois a minha T2 é clientes ativos, eu tenho que filtrar clientes ativos, cadastro vendas. Tô usando alguma variável da T1? Não. Então eu não tenho uma dependência aqui. 
+
+Cadê, né, Mar? 
+
+Então vou colocar tem dois aqui, né? Que que eu tenho? Eu tenho só da entrada, né? Que esse daqui tá entrando no não vai no grafo, né? Mas ali só tá entrando um e talvez e aqui só cadastro clientes. 
+
+Então, um nó de carro. 
+
+Depois eu fui lá total impostos, calcular o impostos sobre válidas. 
+
+Para eu calcular os impostos. Então quer dizer que eu tenho que ter calculado válidas ali, 
+
+ou seja, eu tenho uma dependência de T1 para T3\. Atalhando. Beleza? OK. T4\. Vou fazer um relatório de estoque. Atualizar estoque sobre as válidas. Também eu tô usando T3? Não, mas eu tô usando válidas lá de T1\. Então eu tenho aqui T4\. OK. T5\. Campanha email. Gerar e-mails promocionais sobre os clientes ativos. Esses clientes ativos eu gerei lá em T2\. Então tenho que colocar uma de T2 para testinho. OK. Último. Relatório final. Consolidar dashboard total impostos. Relatório estoque campanha email. Ou seja, utilizei as as variáveis de T3, T4, T5 pra 
+
+alimentar T6\. 
+
+T6\. Então, no final aqui eu tenho T esse chega o meu braço, né? Porque o T7 é só retornar o o final, né? Até poderia colocar um T7 ali, mas ali como não tá como tarefa, eu vou parar aqui no testez, tá? Então esse daqui é o meu gráfo de dependência de tarefas. Agora tá, tenham esse gráfico. Sim, 
+
+professora, por que que a seta é nesse sentido? Se é de dependência, não deveria ser apontando para quem ele defende. 
+
+Ah, tá. 
+
+Calma, deixa eu lembrar como é que é o o gráfico defesa de tarefas, se a gente usa cíclico ou acíglico. Não, eu acho que funciona sobre a execução do programa mesmo. Tá. Então, sobre a ordem da execução do programa que vai ser executado. Eh, espera aí. Nossa, agora você fez uma pergunta que eu vou ten que voltar porque se eu faço uma ordenação aqui, daí eu tenho que fazer do jeito contrário, OK? E colocar no exemplo, você de qualquer forma O que vai mudar, talvez é só o direcionamento da seta aqui, tá? O gráfico mesmo. Eh, beleza. Fiz o meu gráfico. Quais tarefas aqui eu posso executar de forma paralela? Tarefa T3, T4\. 
+
+Então, eu posso executar T1 e T2, certo? De forma paralela. Depois eu posso executar T3, T4, T5 de forma paralela, desde que 
+
+T1 e T2 ten um terminado. E depois tem três anos, não dá para executar de paralelo nada, né? Então, basicamente o que você consegue executar de forma paralela aqui seria T1, T2, T3, T4, T5\. Aqui assumindo que esses dois tenham terminado, certo? OK. Outro outra possibilidade de executar de forma paralela, eu Eu posso executar T1 e T5 de forma paralela? 
+
+Posso de novo, assumindo a condição que T2 tenha terminado para executar T5, certo? Então isso daqui não interfere aqui. Eu ainda posso executar isso de forma paralela. Deu para entender? OK. Então essa é a resolução do exercício, fazer o e mostrar quais tarefas seriam paralelas. Última parte do exercício. Qual padrão estrutura de algoritmo deve ser utilizado para implementá-la de forma paralela? Então lá aqui são os tipos de estrutura de algoritmo. Que que a gente tá fazendo aqui? Composição de tarefa. 
+
+Oi? 
+
+Composição de tarefa. Eu acho que é o resto perf. 
+
+Isso. Exatamente. Aqui tá bem claro. Não tô fazendo divisão e conquista, até mesmo porque lá no meu programa não tem nenhuma divisão de de subproblemas, certo? Lá no meu algoritmo. Então, estão tarefas bem definidas que devem ser executadas de forma paralela. Então, aqui é o eu tô fazendo uma decomposição por teste, né? Test decomposition em termos de da parte de cima, né? E em termos de estrutura do algoritmo. Daí eu tô fazendo um teste, 
+
+certo? Tá claro, 
+
+S? 
+
+Sim. 
+
+Você pode voltar no enunciado por favor? 
+
+É, já que a gente tá falando de prova, pensando em questão de prova e resposta de prova, se você não fala que T1 e T5 pode e T2 pode T3, T4, é uma resposta completa. 
+
+Claro, repete para mim a sua resposta. 
+
+É você Você diz que T1 pode com T5 se tiv. Se eu não colocar isso na resposta completa, só que de prova. Coloque todas as coisas que você está comindo de forma paralela na prova, por favor. Em geral não vou tirar muitos pontos, tá? Mas para deixar claro mesmo, tirar pontos, mas não é muito. A questão é essa resposta complet? 
+
+Oi. 
+
+Essa a gente não pode do jeito que tem aí. 
+
+Sim. E e falar esse daqui pode eh Esses aqui podem ser executados de forma paralela, considerando que T1, T2 tenha terminado. 
+
+Isso é, mas eu precisaria falar que T1 e T5 pode ser executado em paralelo desde que T2 tenha. Isso que eu acho que isso que ele 
+
+uma dessas T3, T4 e T2 para desear paralelo desde que tem um determinado. 
+
+Tem mais essa ainda de resposta. 
+
+Tem mais essa ainda, né? 
+
+Até porque T3 e T4 também podem ser executados junto com T2\. Desde que tem um 
+
+Exatamente. Então uma dessas dessas dessas 
+
+é é para pegar um grupo só. Não precisa pôr tudo 
+
+não. Não precisa pôr tudo. É. 
+
+Qual seria? Poderia. 
+
+O Eric lembrou uma coisa muito boa que na prova provavelmente vai ser 30 tarefas. Não. Não. Então 
+
+professor o gráfico já traz a responsabilidade que a gente precisa para responder isso aí. Desen o gráfico é sucesso, né? 
+
+Exatamente. É justamente por isso que a gente precisa do gráfico, porque daí a gente consegue ver muito claramente quais delas que aqui aqui tá muito claro. gente 29 assim não. 
+
+Vocês viram minha primeira prova? Eu não comprei nem 30\. Não, tinha um que tinha lá um um monte para ver. 
+
+Vamos p set de graça. Que graça. 
+
+Vai ser mais ou menos desse tamanho, gente. Não vou falar muito mais muito mais que isso. Eu tenho que considerar o tempo de vocês, pelo amor de Deus. 
+
+Eh, mas é, Lucas, ó, só respondendo sua pergunta. É isso mesmo. O gráfico serve para isso, para você ver bem claramente quais tarefas são independente de quais e quais daí você consegue fazer elas de forma e paralela, né? Tá? Esse negócio de assumido que T1, T2 terminado é para deixar a resposta completa mesmo e bem clara, tá? Até mesmo porque é realmente isso que precisa ser executado. Marcos uma pergunta. 
+
+Não. 
+
+Ah, tá beleza. 
+
+Perfeito. Excelente exercício. 
+
+Beleza, gente. Então, assim, variações disso considerando outras estruturas de algoritmo. Tá bom. 
+
+É a aquele do lado direito a gente não tá usando, né? Não, não agora. 
+
+Ah, é o Então, ó, esse flow of, né? 
+
+Tá. Não, não vou cobrar, tá? Só só por tarefa e por dados. 
+
+Tá bom. 
+
+Tá. É o que vocês precisam saber mais. 
+
+Eu sei. 
+
+Você tem que começa a bagunçar demais. Tá até difícil para fazer exercício. Tudo bem. Ex, tá? Outro tipo de exercício, né? Na etapa inicial de um projeto, de um programa paralelo, né? O servidor precisa definir como dividir trabalho em tarefas e como mapeá-las para as unidades de execução, né? Como trades ou processos. 
+
+Explique o tradeoff entre a granularidade das tarefas e o número de trades executadas, utilizadas na execução. Então, lembra que uma vez que a gente agora a gente agora falou assim: "Meu Deus do céu, que que é grossa, gente? Lembra lá que quando a gente faz eh a gente dividiu isso daqui, agora a gente vai ter que começar a criar prédio, criar processo eh no meu na para executar mesmo o meu trabalho, certo? E daí vem aquele negócio em geral, quantas que a gente que a gente discutiu quantas trades a gente precisa para cada eh programa, né? Em geral, qual que é o problema? O a trad Então assim, a gente precisa criar o suficiente para que a gente não tenha ociosidade dos unidades de execução, né? Eh, mas criar muito a mais do que eu preciso pode causar um problema de performance porque eu tenho um overhead de como gerenciar aquela tradularidade da divisão da sua tarefa. Então, a granularidade quer dizer, se eu divido a minha tarefa por tarefas mais maiores e eu crio menos trades ou se eu divido em tarefas muito pequenas e crio várias trades, né? Então depois vem os slobularidade. Então daí e depois tem outra coisa, se eu tenho eh muitas trades também ou se eu tenho granularidades muito diferentes entre as tarefas, eu tenho um problema de balanceamento entre as minhas unidades de execução. Tanto é que a gente viu sobre o balanceamento de carga, tanto estático quanto o dinâmico, certo? Então tá. Então tudo isso daqui se torna um grande tradeoff sobre quão grande a minha tarefa tem que ser, quanto que eu posso criar de tradir que eu não tenha eh unidade de ansiosas. Afinal, a nossa maior objetivo em termos de programação paralela é que a gente aproveite o melhor possível com as unidades de edução eh disponíveis. Tá? Então essa exercício aqui sobre explicar o trade do éitamente para perguntar sobre como o porquê desse trade, certo? Então o que que é eh qual que seria a resposta na programação paralela? O trenof ocorre entre o balanceamento de carga e o custo de gerenciamento, né? O overhead e de por exemplo uma uma prédica ou processo, né? Usar granularidade fina, né? Ou seja, muitas tarefas pequenas pequenas e mais fres pode distribuir melhor o trabalho que evita núcleos que fiquem ociosos, certo? Mas eu tenho mais overhead de criação e sincronização que pode afetar o meu programa e deixar o programa mais lento. Então essa é uma parte do meu tradeof. A outra parte é se eu utilizar uma granularidade grossa, né? Então poucas tarefas grandes e menos treges, reduz o overhead ao mínimo, mas aumenta o risco de balanceamento de carga e subutilização dos processadores, porque eu tô agora utilizando tarefas maiores, eu posso ter tarefas maiores, mas elas vão ter diferentes tamanhos e daí por conta disso, eu vou ter certas partes maior unidade de execução que vão ficar ociosas e vai afetar também a performance do meu programa, né? Então é esse o tradeoff entre os dois. Eh, assim, o ideal é buscar um equilíbrio onde as tarefas pequenas suficientes para ocupar todo o hardware é grande suficiente para compensar esse custo de gerenciados, tá? Então é esse o tradeof em questão da granularidade. Um cotovelo aí, 
+
+professora, se a gente tem um algoritmo que executa as tarefas A, B e C e A e B juntas são tamanho de C ali em execução. Eh, e aí fazemos o quê? Joga A e B dentro de uma trad. 
+
+Você pode fazer isso, 
+
+mas não é o pensamento da tarefa não se quebrou fazendo isso. Ela vai tá, as tarefas aí estarão juntas, não tá mais separado tarefa. Ah, tá. Mas você ainda não tá examas em paralela, né? O que que vai acontecer se você tiver, por exemplo, eu tenho A, B e C, então essa é uma essa é uma questão boa para falar sobre uma questão do balanceamento de carga. Eh, tá, eu tenho aqui A, vamos supor que esse aqui é o meu poço de A, eu tenho aqui B, 
+
+parece que é um pouquinho maior, na verdade, eu que elas estão e aqui eu tenho C, ou seja, A e B juntas seria o valor de C. Daí depende quantas trades eu vou criar aqui dentro. Se eu tiver duas, tô considerando que isso daqui pode rodar tudo em paralelo, tá? Essas três peças pode rodar em paralelo. Uma não tá esperando nenhuma outra, tá? Considerando que eu tenho aqui as duas, todas elas em paralelo. Se eu tiver duas trades em termos de balanceamento de carga e se elas podem rodar em paralelo, compensa eu fazer A B e jogar C aqui, tá? Isso compensa por eu tenho exatamente o tamanho igual das minha da do do mesmo tempo de execução que eu vou gastar eh em cada uma das minhas unidades de execução, tá? Então isso compensaria. Agora aqui tenho três trads, por exemplo, daí você já tem que começar a se perguntar. É bom eu ter três prédios? Vai adiantar alguma coisa? Porque daí eu vou ter duas prédios ficando ansiosas até esses ter aqui terminar, entendeu? E daí acaba caindo justamente nesse tradeoff que você agora colocou uma granularidade bem fina sobre mais tarefas, mais trades, mas daí não é um curso de overhead, mas é um curso de você tá esperando eh a sua outra tarefa. Eh, terminar, tá? Claro. 
+
+Se B depende de A, então aí vira três, né? 
+
+Se B depende de A, iniciar, 
+
+não. Se se B depende de A, eu ainda posso fazer isso, né? Eu posso começar com A, quando o A terminar, continua B e C continua executando. 
+
+Agora, o problema é se A depende de D, 
+
+oi. Daí mostra, né? Exatamente. Ainda nãoem duas 
+
+aí não tem. Aí eu continuo utilizando duas, certo? Só que que vai acontecer? Vai ter uma parte ali que a minha trad vai ficar esperando. 
+
+Então eu vou começar aqui B, né? Ó, 
+
+eu fico esperando 
+
+esse daqui é os 
+
+E quando isso daqui terminar, daí eu vou ter que ir para lá. E daí eu posso usar até aqui, não tem jeito, 
+
+entendeu, 
+
+professor? É, poderia quebrar e usar quatro tres. 
+
+Poderia quebrar C e usar quatro, 
+
+seja, aumentar aidade. Seria melhor do que fazer em três trades. 
+
+Vamos tentar fazer esse exercício. Vocês também tem ideia de exercício, viu gente? Dois a um. Qualquer possibilidade dela na colocadinidade dela. Tem que entender verdade, verdade, verdade. Mais perguntas aí. Mais ideias, 
+
+tá? Qual que é a ideia aqui que eu tenho agora? A B, 
+
+eu tenho B e eu tenho C. 
+
+Isso. 
+
+OK. Agora você tá falando para mim que, na verdade, esse T aqui eu posso quebrar, 
+
+não, quebrar em duas, 
+
+quebrar no meio. 
+
+Quebrar no meio que 
+
+eu posso quebrar em duas. 
+
+Isso 
+
+aqui. Então, o que que aconteceria? Na verdade, eu teria A, B, C, 
+
+C1 e C2\. 
+
+C1 C2\. Sendo que C2 depende disso daqui. Isso. 
+
+OK. 
+
+Ah, não. Aí não vai quebrar nada. Então, é 
+
+não vai quebrar. 
+
+Vou ter que ficar esperando 
+
+isso que ele vai ter que esperar de qualquer jeito. Então, 
+
+não adianta. 
+
+É, não adianta muita coisa. Gente, esse tipo de cálculo vocês podem pensar até lá quando lembra quando a gente fez sobre a questão das unidades de execução? É mais ou menos a mesma ideia, né? Se eu jogar aqui, esse é o tempo que eu tenho, eu tenho que esperar. Eh, ainda tem essa dependência, né? É, é uma forma parecida de pensar, mas agora é sobre outra perspectiva de 
+
+Ah, mas tá liberado tudo aí, professor. Então, eh, subdividir a tarefa e e poderíamos em dados aí ainda nisso aí. 
+
+Todo mundo dependendo do outro. 
+
+Você poderia, é, esse aqui eu tô tô pensando sobre decomposição de tarefa, mas aí também, por exemplo, se você for decompor em dados, vai ter provavelmente uma parte dos dados que você vai ter que pode executar em paralelo, certo? E pode ser que tenha alterações lá. que você tem que esperar uma certa configuração sobre os dados acuma coisa assim. Não é tão simples. Então assim, 
+
+eh, por isso que eu sei que vocês odeiam a palavra, mas depende, 
+
+né? Então tem que ficar fazendo todas essas análises para nada. 
+
+Gente, ficou claro sobre a questão doularidade? 
+
+Perfeito. Então, claro que essa questão inclusive já poderia ser considerada ponto para todo mundo. 
+
+Será? Será? 
+
+Eh, gente, só lembrando agora que a gente tocou na questão do balanceamento de carga, né? Só lembrando dos tipos de balanceamento de carga que a gente tem. Nós temos o balanceamento de carga estático, que a gente basicamente faz toda essa divisão de trabalho que a gente tá fazendo antes mesmo do de começar a execução, né? Então, ou quando a gente tá compilando, por exemplo, o o programa, né? Então, é exatamente o que a gente tava fazendo aqui, seria o balanceamento de carga estágil, porque a gente sabe quanto cada tarefa ocupa, né, o tempo dela, o custo dela e daí a gente consegue balancear de acordo com isso, né? Então, a gente tá decidindo previamente como que a gente faz esse balanceamento. Esse seria uma ideia de balanceamento estático, balanceamento dinâmico, é quando a gente tá fazendo esse balanceamento durante a execução do programa. Por exemplo, comecei lá com três créditos, tá? Comecei a executar uma, duas, daí eu vi que a minha tal tarefa X terminou antes, eu jogo já outro eh outra tarefa para ela. Então eu tô fazendo meu balanceamento conforme, por exemplo, que as minhas trades estão terminando. Isso é uma forma pode fazer o balanceamento de forma dinâmica de acordo com a lógica do seu programa, você tá fazendo esse balanceamento durante a execução. 
+
+Professor, um termo determinada parte da matéria que você falou algo título, mas usou um termo tipo estilo que uma vai roubar a tarefa da outra. 
+
+Sim. 
+
+Como é que é o nome disso aí? E é 
+
+é é o é o work stealing algoritm. 
+
+Isso. Work ste 
+
+é é implementado dentro do Java do lado daquela coisa que a gente que a gente viu sobre a o o joy full eh no exor services acho que tinha também quando a gente cria sobre exor service e a parte de joy lá no Java é lá que a gente vê o 
+
+isso é esse conceito 
+
+a Sim ele é 
+
+professora nesse estático só para eh diferenciar aqui não ficou bem claro para mim eh então tá sendo também responsabilidade do programador e as técnicas da linguagem que vai efetuar no balanceamento. Não é só Você vai definir lá no código. 
+
+Ah, tá. Em em geral é a gente que define mesmo, é o programador que define 
+
+mesmo, tá? O que que o estático vai fazer? Por que que ele fala em tempo de compilação? Eh, eu acho que é aí a dúvida, né? Em tempo de compilação ou execução ou inicialização. Sim, tem algumas linguagens que tem recursos que você pode utilizar para te auxiliar nesse balanceamento estático, tá? Então, e daí quando você faz isso em tempo de compilação, ele já vai eh utilizar tudo junto, fazer o planeamento certinho e seu. Tá. Eh, 
+
+Word Steam entra no dinâmico, né, que o AD foi tá roubando, lá tem que saber, né? Tá, o F já tá rodando. 
+
+É, não, o Fort não rodou. Work steaming, você acabou de comentar. 
+
+Ah, tá. Isso daí é dinâmico, 
+
+tá? Porque vai terminando e vai colocando para frente. 
+
+Eh, que eu não usei aqui. 
+
+OK. 
+
+Por quê? Que que eu queria ver? 
+
+OK. Eh, 
+
+aí o Guilherme ficou feliz matando saudade. 
+
+É nessa hora que vem uns três tipos de medo. 
+
+Eh, gente, 
+
+inclusive é a única coisa quea do código. 
+
+Oi, tava lembrando aqui qual foi a ideia aqui. Tá, é falando sobre lá a parte de que a gente falou do executor service, do for joy pool, né? Eh, como que exemplo de como isso pode ser cobrado na prova? Não vou pedir para vocês programarem na prova, não. Acho que vocês já programaram bastante em papel em algoritmos em, né? Então, não precisa ser feito, né? Então, como é que seria aqui? Eh, como que poderia ser encontrado, né? Eu dou um algoritmo, né, que utiliza ali as construções de arma que a gente viu e eh pergunto, né, quantas tarefas e quantas tes estão sendo utilizadas e qual a estratégia de decomposição utilizada aqui. Então, tá? Então assim, vendo aqui, gente, eu tenho lá um vetor dado Daí eu tô utilizando um execor ali do Java e eu tô declarando eh meu trado. Então quantas trades eu tô utilizando só para aquela linha? A gente já consegue ver que são 
+
+duas, 
+
+certo? Então parte da da resposta já tá aí, tá? Tô utilizando duas trevas. Depois que que eu vou fazer? Eu vou agora fazer um for em que eu vou vou utilizar é qual que é o início e qual que é o fim de cada parte do vetor. É isso que eu tô fazendo ali no início e fim ali, certo? E daí eu vou sobre este início que eu declarei ali, submeter cada uma daquelas partições para uma préd fazer o submite da P ali. Então que que eu tô fazendo no final aqui? É basicamente eu tô somando os dados do de cada uma dessas partes, certo? Quantas partes que eu tô fazendo? Tô fazendo a cada três ali, né? Então, 10, 20, 30, 40, 50, 60, 60, 80, 90, 100, 7 + 3, na verdade são quatro, né, que eu tô começando ali do zero. É, então Eu tô dividindo ali 10, 20, 30, 40, né? 50, 60, 70, 80, 90, 100\. É isso mesmo, gente. Eu tô fazendo essa compilação certa, 
+
+é, né? Confirma para mim que é a compilação ali na hora, né? E daí depois de cada uma delas eu só estou cada uma dessas partes e dou um print aqui de qual que é o meu início, qual que é o meu fim e qual que foi as delas. OK? Tô fazendo essa partizão sobre o vetor. Que técnica que eu tô utilizando para fazer a decomposição? 
+
+De dados. 
+
+De dados 
+
+de dados. Exatamente. Tá? Então aqui a resposta aqui, né? É quantas tarefas eu tô fazendo. Então eu vou fazer ali em três tarefas, né? Que eu fiz aquilo lá em mais 3, Tá? Então tô fazendo três tarefas, duas trades e eu tô utilizando de posição de dados, tá? Claro que eu vou deixar muito mais fácil, tá? 
+
+Professor, não tem a tradução. 
+
+Mas tá aí, né? Dois ou três? 
+
+É três neste caso, né? Você tem muita razão. Uma das delas é a mé. Você tá certa? 
+
+É. É. Bom, mas só considere o seguinte programa. Aí só tem duas, não tem a terceira 
+
+é português. 
+
+É, não tem uma cência exata, né? Tem que dar uma resposta. 
+
+A prova ia ser três. 
+
+Você tem a pré e duas do executor ser, tá? Vou deixar mais exato na prova. 
+
+Considerando execução do programa. 
+
+Considerando a execução do programa, certo? Tá. Vou colocar quantas sedes vocês têm na PU. 
+
+Pronto. São duas, né? 
+
+Tem são duas. 
+
+Tá, 
+
+ficou um pouco confusa aqui. Eu prometo deixar mais para 
+
+Não, ouvião pergunta na hora surgir essa 
+
+gente falando agora, tá? Então assim, eh, essa parte do programa Santar Lela é mais ou menos isso a ideia que eu vou cobrar, tá? Então, assim, quais os tipos de decomposição, aquela questão do balanceamento, né, eh, mais conceitual mesmo, né, que nem eu falei com Vocês estão já fazendo o trabalho para essa parte? Então, só trabalhar, só lembrar dos conceitos desse impressionante. Incrível. Impressionante. 
+
+OK. 
+
+Professora podia tá resolvendo a prova aqui. 
+
+Tá. Eh, gente, depois a gente passou do conteúdo pra parte de big data radu. e o Spark já tá. Eh, que que eu quero que vocês lembrem primeiro, quais são as características de big data, principalmente sobre esses 5 meses, tá? Eh, então lembrar lá que esse big data geralmente é caracterizado pelos 5 vezs, né, que é volume, velocidade, variedade, veracidade e valor. Então, lembrar é disso, lembra da definição também. Então é é a partir disso que a gente caracteriza big data e depois lembrar em termos de arquitetura sobre o Radup e o Spark. Que que vocês vão lembrar sobre o Radup em termos de arquitetura, que é uma arquitetura que eu tenho nó mestre, que é o name e eu tenho depois o nó eh data, 
+
+o data que estão os nós workers, né? Eh, ou nós entr também que a gente pode utilizar o terminut, ele basicamente gerencia todos os arquivos, ele que abre, fecha, renomeia arquivos e etc. E o data note é basicamente aquele que vai ter uma parte desses arquivos, certo? Ele vai armazenar uma parte daqueles arquivos, né? Um bloco, né? E E também quando eu faço lá aquela ideia de programação map, aquele map vai tá sendo executado aqui no canal noite, tá? Tu lembra dessa dessa ideia de arquitetura do Radup, que é isso é uma coisa que eu posso cobrar também, né? Explicar o que que é o name node, que que é o data node e qualquer arquitetura geral do rador. OK? Agora sobre o HDF mesmo, O name node tá armazenando também, professora? 
+
+O name node ele não armazena. O name node ele gerencia. É sempre o datalode que vai armazenar. 
+
+Eh, tá. HDS. Ficou pequeno aqui. Considere o conjunto de dados abaixo no cada linha ocupa 1 MB, tá? Suponha essa cadinha é cansada, hein? É, suponha que esse conjunto de dados seja armazenado e processado com o sistema Rador. configurado com tamanho máximo de partidão, né, o bloco igual a 4 MBS em um cluster composto por três nós trabalhadores, né, os workers ou os data noes ali que a gente acabou de falar, onde cada worker possui oito MBs de espaço disponível em disco. Qual seria o particionamento inicial de dados? Vamos começar primeiro. Qual que seria o particionamento inicial de dados? OK, tenho todas essas as linhas ali, cada uma tem um MB. Cada o meu HDFS tá eh colocado lá que ele vai ter quatro MBs lá em cada particip, certo? E cada worker meu tem oito MBS no total. 
+
+Professor, comecei 448\. 
+
+Oi, 
+
+3\. 44\. 
+
+Isso, exatamente. Tá. Então vou fazer, 
+
+vou colocar aqui worker um, worker do worker 3\. 
+
+Qualquer coisa resposta 42\. 
+
+Esse daqui eu tenho 8 MBs de capacidade, 8 MBs de capacidade 8 MBs de capacidade. A minha parte então tem que ter quatro, tá? MBs. 
+
+Ó, Gabi, você ali na linha sete, hein, Gabi. Olha lá, hein. Eh, como que a gente eh como seria o paramento da WFS aqui? 
+
+442 e replica 442\. 
+
+442\. Quais linhas? 
+
+Não pode. Ué, quais? Não pode ser 2 3 4 5\. 
+
+É por ordem, tá? Lembra que lá quando a gente tá particionando o HDFS, ele vai ler no sl of set. Então ele vai começar lendo. o arquivo 
+
+4 MB um bloco, começar a ler 4 MB outro bloco e o resto 442\. 
+
+Então ele vai ler por baixete mesmo, tá? Então a gente vai ter que seguir na linha, na tamanho das linhas, na ordem das linhas. 441 é até completar, né? 
+
+Isso. Até completar. Então aqui eu vou ter 
+
+2 3 4 5 
+
+2 3 
+
+Faltou um, né, professora? 
+
+Faltou um 
+
+era pegadinho, por isso que eu falei com né? Então essa daqui seria o particionamento e aqui eu tenho quatro MBs, né, dessas linhas. Depois eu vou ter aqui 6 7 8 do lado do 
+
+9 6 7 
+
+zero do lado do dois 
+
+nove negócio. 
+
+Tá tranquilo, tô com problema. 
+
+4 MD. E aqui por último só a 10\. Aqui também vai ter o Esse é meu paricionamento inicial, certo? Tá. Quais cada um texto? Tá. Considerando um fator de replicação igual a dois, quais blocos teriam replicados para quais workers? Então isso daqui é um bloco um, isso daqui é um bloco dois. Isso daqui, considerando que seja o meu bloco tr. Tá? Vamos dar o nome aos blocos. Então, tenho o meu bloco um que é isso daqui, isso daqui e isso daqui. Eu tenho um fator de replicação dois, ou seja, eu vou ter que replicar cada bloco duas vezes em dois workers diferentes. 
+
+De redundância, né, professor? Isso, professor. 
+
+Isso. Por redundância. 
+
+Mas esse dois não quer dizer o dois no total, porque eu acho lá no o o default dele é três, né? Quer dizer, existem três cópias. 
+
+Fator de aplicação. 
+
+Isso. Desculpa, é isso mesmo, tá? Vou ter que aplicar mais uma vez. Ah, é dois cop. Desculpa, é isso mesmo. Eh, então o fator de replicação dois seria que eu tenho que ter uma cópia dele mesmo, que a gente já tem aqui, e eu vou ter que replicar ele mais uma vez em algum outro worker, no caso, tá? 
+
+A gente pode jogar pra frente. 
+
+Mas um X aí um e dois 
+
+é joga tipo 
+
+o um pro dois, dois pro três e o três pro. Pode ser? 
+
+Pode. A gente pode colocar aqui B1, 
+
+a gente pode colocar aqui B2 e aqui o B3, certo? Só aqui eu garanto que eu tenho o meu fator de reputação. Que que eu tenho que tomar cuidado aqui? 
+
+Você não vai estourar a quantidade. 
+
+Exatamente. Eu tenho aqui um total de oito MBs. Então aqui quando Quando replico o bloco um aqui no worker dois, isso daqui eu já vou ter oito no total, certo? Aqui acabou, não consigo pôr mais nada aqui. 
+
+W3 aí B2 vai inaugurar uma nova toda ou ele vai preencher a a que tem 1 MB usado lá e jogar o que faltar numa? 
+
+Não, aqui ele vai ter cinco MBS no total. Eu tenho aqui um desse daqui mais quatro de um Um outro dos pontos. 
+
+Ah, vai mexer lá na outra, né, que já tá um ano só, né? 
+
+Não, não. E daí depois aqui, como esse bloco três para cá, eu tenho mais um MB aqui e eu acabo tendo cinco MBs aqui também. OK? Então, é é essa é esse cuidado que vocês tem que ter. Se estourar o valor aqui do espaço total, eu não consigo mais replicar nada aqui dentro. Eu tenho que jogar para algum outro lado e daí eu tenho que fazer esse fator de aplicação de alguma forma. OK. Você sobe isso daí, por favor, porque tá cortando. 
+
+Ixi, 
+
+como é que eu 
+
+isso assim para baixo? Ah, 
+
+obrigada, 
+
+professora. 
+
+E tem aquela condição também que se a gente considerar que um hom morreu, tem que ter todos os disponíveis nos outros, né? E aqui tá valendo. Questão de replicação. Então esse aqui tá valendo. Então é é esse é um fator importante, ó. Se o nome eu morrer, eu consigo replicar tudo. Nessa replicação que a gente fez aqui, a gente consegue, porque a gente tem pelo menos uma cópia em cada worker, né? Então a gente consegue reconstruir, por exemplo, os dados nesse caso, tá? É essa ideia do exercício. 
+
+Muito boa. O mundo real, isso aí acontece automaticamente, né? 
+
+É só e você utilizando o radum, ele vai fazer isso automaticamente. Aqui a gente é para vocês estudarem mesmo o aprendido. 
+
+É, OK. Lepereci de acesso de um servidor médio armazenados em dois blocos distintos distribuídos em workers do Radup. Suponho que você esteja executando um programa Metroidust para contar quantas vezes cada Código de status ocorreu no total utilizando dois rappers e dois reducers. Descreva quais são as entradas saídas de cada uma das fases. Então agora a gente vai pode ir pode pode pagar. Eu vou escrever para cá, gente. Você escrevam para lá. Vou escrever para cá. 
+
+Democracia de boa. 
+
+Então vamos lá. Lugar certinho. Eu tenho ali um worker um, worker dois. Eh, agora eu tenho que fazer uma função de map reduce. Que que primeiro eu vou fazer no MEP? Qual que a minha entrada? Vocês já sabem, seria aquilo lá, certo? Eu já tenho paronados. Qual seria a linha saída do MAP? Agora eu quero contar quero contar no total quantas mensagens eu tenho de cada tipo. É. Esse é o resultado final que eu quero fazer 
+
+ideias 
+
+não, no m do 
+
+Ah, 
+
+pensa que a gente tá programando estilo médico do Então primeiro no 
+
+filtro, aquela chave de valor. 
+
+Isso, isso. 
+
+Ah, é verdade. 
+
+Então essa é essa é a parte principal. Já levou da parte principal. A gente vai sempre trabalhar com a ideia de chave valor, tá? Então quando a gente tá fazendo o modelo mé reduz ali. Primeiro, o que que a gente tem que fazer? A gente tem que ver, colocar uma chave e o valor contar quantas vezes eu tenho naquela, em cada uma das minhas entradas aquele valor, certo? Então, o que que vai acontecer aqui? Eu vou passar para cada uma, para cada uma das minhas entradas, eu vou colocar o valor de um, porque eu tenho só uma vez aquela mensagem para cada daquelas entradas ali, né? Então, aqui no worker um né? Eu tenho ali o 200, vou utilizar só os números, tá gente? Só para eu vou colocar 200 aqui e daí eu botei um na frente porque eu contei que eu tenho uma vez aquela mensagem. Depois eu botei 404 1 também e 200 um também. Eu não conto nesta parte, eu vou contar só lá noce. Tá? No MP eu só tô eu só tô colocando agora o valor sobre as minhas chaves. Nesse caso aqui, tá? Que que a gente tá utilizando aqui, gente, esse algoritmo aqui é a mesma ideia daquele word count na na aula, tá? Então aqui eu vou ter agora 2011, 400 4041 e no meu worker 2, né? Colocar aqui worker do seria, eu vou fazer a mesma coisa, né? Então, 5001 e daí 40\. É isso que eu vou ter como saída do MP, tá? Riso agora, o que que eu tenho que fazer? Agora para fazer o boost. É, tá aqui, tá? É isso daqui que tá sendo feito. Próxima parte. Agora eu vou fazer um shuffle ou um sorte para mandar proce, né? Então aqui barra sorte. Quando eu faço o shuffle barra sorte, o que que eu vou fazer ali? Eu vou agrupar as mesmas chaves que eu tenho para mandar pros mesmos reducers, certo? É essa a ideia. Então agora aqui, eu vou colocar aqui 200\. Que que eu vou ter aqui? Eu vou falar assim, ó. Eu tenho a chave 200, ela tem valor um. no worker um. Depois eu achei um outro um aqui no meu worker um. Ele vai botar tipo um vetor desses valores, tá? E depois lá no meu worker dois, ele vai fazer o shuffle. Eu falo assim, ó, também tem um aqui, tá? Então é isso que eu vou ter de cada um deles. 
+
+Mas que ele já tá colocando para algum algum worker ou não? 
+
+Não, aqui eu só tô fazendo a parte de chão. 
+
+Você ainda não sa qual worker 
+
+ele vai mandar para um tá. Então esse daqui vai para algum dos reducers. Então reducer um isso daqui vai ser de entrada para algum dos redúers, tá? 
+
+Mas tá acontecendo onde? Porque aqui é aqui que tranquilo. Tá pensando em poucos dados, né? A gente já pensar numa quantidade gigantesca. 
+
+É, ele vai, que que ele vai fazer? Ele lembra que o HDFS ele vai ser armazenamento de memória. Então, fiz o método memória da tem risco 
+
+e sempre sempre em disco, né? Então tá, fiz o map, executei isso daqui, eh armazenei um disco, o shampoole daí vai pegar cada uma das partições e tentar verificar quais chaves eles têm em comum. Ele vai executar isso como programa mesmo, armazenar o resultado intermediário do resultado do chão com disco e daí o reducer vai acessar cada um deles. Então é o programa mesmo vai sendo executado aqui. O resultado disso vai serado em disco. Então aqui aqui em disco. Esse aqui vai acessar em disco. Executar esse programa de sorte com sorte. Aqui acontece movimentação de dados, tá? Acontece movimentação de dados e daí ele já manda para tipo eh o disco de um dos dois reducer, tá? É que eu tô fazendo aqui mais passo a passo em termos de algoritmo. 
+
+O que eu tô pensando é assim, professor, vamos imaginar cada worker É como se fosse um um nó do clan cluster do club. 
+
+Isso. Isso. 
+
+Então vamos imaginar que cada um o worker tenha lá uma capacidade de disco, 1 GB. Você tem 1 GB lá e 1 GB lá. Você tem dois workers e aquela quantidade de dados que tá ali é exatamente o talo do disco. É 1 GB. 
+
+Uhum. 
+
+A hora que eu tô fazendo shle, eu vou ter pelo menos 1 GB ou mais que 1 GB. E eu vou colocar esse 1 gigond terceiro W. 
+
+E alguns Você tá executando, 
+
+mas acabou, tá no máximo já. 
+
+Entendi. Você tá falando, 
+
+tá? 
+
+Stack overflow. 
+
+E na memória não cabe, né? Porque tá supando que o disco é maior 
+
+quefow não dá não. Essa é uma boa pergunta. Quando é que eu quando eu uso no caso que é onde que ele vai fazer? Onde é que ele vai fazer o swap, né? É isso. Vamos poder 
+
+não tô fazendo porque ele não tá mexendo as ele tá tá tendo uma ponta. 
+
+Os dois estão cheios. Onde é que ele faz? Onde é que ele faz o suap? O suap o chafou. Isso falando, né? Cadê o espaço para fazer o chafou? 
+
+É isso. 
+
+Aí uma ótima pergunta. Não, não rápida. 
+
+É. É que na prática não deve acontecer isso, né? Sempre deve ter um espaço que ele acabe utilizando. 
+
+É, tem que ver porque 
+
+Mas no mundo do big data a gente não pode do espaço não. Eu tenho isso tá 
+
+tá bom. 
+
+Eh, eu coloco em algum lugar das notas dos slides. Obrigado. 
+
+Não quer dizer aquelas coisas assim, ó. Todo todo disco tem que ter no mínimo espaço do espaço proente, né? 
+
+É, tem falando, tem boas práticas para isso, né? Geralmente a gente a assume o canal disco muito maior do que onde a gente vai utilizar eh justamente, né? Mas quando ocorre um tal que que ele faz, tem que dar uma olhada no que que ele vai fazer. Eh, mas é, vou vou vou verificar isso daí, 
+
+tá? Gente, falando aqui sobre o processo, porque aqui o aqui é só para vocês entenderem o processo de virtual. Eh, tá. Então, o que que ele vai fazer aqui agora? Ele colocou ali que eu tenho a mensagem 200, que eu tenho a o vetorzinho da dos três valores que eu achei ali no meu nos meus dois números, né? Então tem um dois aqui e um aqui. 
+
+Depois eu vou ter 
+
+300\. 
+
+Não, aqui é tem 300\. Não coloquei 4 
+
+Ah, eu tô sem óculos. 
+
+E daí eu vou ter dois aqui que é 200 
+
+para cá e desse daqui para cá, certo? E depois o 500\. 
+
+Beleza? Agora eu tenho esses três aqui 
+
+e eu vou mandar agora 
+
+para dois reducers, que daí sim que eu vou fazer a contagem para o método reduce. Então daí aqui gente poderia escolher, tá? Ou jogar esses dois para cá ou esses dois para cá, né? No caso, né? Vamos supor que eu utilize esses dois, vai servir de entrada aqui para esse reducer, tá? Então essa seria a entrada do reducer um e essa seria a entrada do reducer 2, tá? Então faço o dos dois e daí eu vou ter a soma de fator, certo? Então 4 2 500 1, né? E daí na verdade esse esse produs vai fazer produz dos dois aqui que eu vou ter como resposta final. 
+
+Tá. 
+
+É o aquela resposta final é o quê, professor? É sa ainda. Tá 
+
+aqui nos slides, ó, seria primeiro vocês entenderem a saída do metro, 
+
+isso. 
+
+Depois a entrada da fase champa, que é a saída do metro, né? Depois a entrada, saída e entrada para o reducer, tá? Eu não coloquei o shuffle aqui, então vocês só podem, podem só colocar a entrada do reducer, né? Então vou reducer um ali, reducer dois aqui. 
+
+E daí depois a saída do redcer, que seria o o resultado final. 
+
+Isso. E mas e aquele lá no final que vocêou? É o quê? 
+
+Ah, tá. Aquilo lá é só para vocês verem como é que vocês colocam a o resultado eh como a gente printaria o resultado final, 
+
+tá? Eh, esse daqui, 
+
+mas ele não faz parte do redu, né? Redu acabou a gente já faz ali. Sim, sim, sim, sim. 
+
+Tá. 
+
+OK. 
+
+E gente, um exemplo bom de vocês verem cada passo mesmo é aquele board count que tá no slide, tá? Ali tá bem passo a passo mesmo. Tinho, eu acho que é assim o melhor exemplo para vocês verem como é que tá sendo feito eh todo o processo lá, tá? 
+
+Não, mas foi muito bom explicação muito bom, 
+
+tá? Então assim, eh questões positivas para ver se vocês entendem a ideia de Med, ok? Outra coisa, tá acabando, gente, tá acabando, mas não tá acabando aqui. Eu tô preocupada. 
+
+Eh, outra coisa para lembrar, quais são as vantagens e desvantagens? do MAP reduce, desse modelo do Map Reduce. Então, vantagem é fácil de implementar duas funções só. Desvantagem, chefe mata tudo. 
+
+Desvantagem, eh, não é tão fácil você traduzir todos os algoritmos possíveis em só mapuz, né? Essa é uma das voltagens, fica limitado pelo próprio modelo de programação. A segunda desbotagem é a questão do armazenamento em disco, né, que é o problema do Radup em si e que o processo de shampoole sorte afeta diretamente essa performance. Então, lembra quais são as vantagens, desvantagens ali do MPUS, tá? 
+
+Aquela questão dos meses, daria para fazer, né, agrupar um faturamento de meses, daria para fazer com método. 
+
+Professor, o resultado que o chef ali fica armazenado ao longe dos dados aí. Ô, o 
+
+parte central ali 
+
+aqui a parte central aqui ele vai dar, ele vai armazenar em disco. Ah, Qual? 
+
+Em qual worker ou no 
+
+aqui? Ele vai, ele já vai entrar direto dentro de um bocer, tá? Então aqui ele já vai fazer isso daqui e vai armazenar esse worker aqui e armazenar esse worker aqui, tá? Então eu não tô falando do armazenamento, eu tô falando só do processo de metal doce mesmo. Ah, outras questões sobre bancos de dados no ciclo o teorema teorema teorema cap não e sobre versus base, né? Então, lembra lá que quando a gente estudou transações, a gente tinha nos bancos relacionais eles são ácide, ou seja, eles são atômicos, consistentes, isolados, né? Então, tem toda a questão de que quando eu tô fazendo uma transação, eu tô garantindo que eu tô indo, que eu tô que aquela transação tá fazendo uma resposta correta. O base não é é um tipo de que a gente utiliza geralmente em bancos de dados no ciclo. É bastante comum você encontrar em bancos de dados no ciclo, apesar de não serem todos que estão bem, tá? Graf é assim, 
+
+é de banco para banco, mas por exemplo os bancos de dados em graf, por exemplo, for ele é out, né, que é o mais comum ser utilizado. Eh, eu acho que tem também da 
+
+ele é ácido porque a implementação dele é em SQL, né, professora? 
+
+Não, ele é ácido porque ele garante que quando eu tô fazendo uma transação, eh, eu vou eu vou comitar ela de forma atômica. Lembra quando a gente viu lá na transação que a gente ou a gente comita ou a gente dáback se dá algum problema e que eu tô levando o banco de um de um estado consistente para outro estado consistente. Ou seja, se você tinha alguma restrição de integridade anteriormente a quando eu for Comitar essa transação ainda vai ser consistente com o banco. Essa é a ideia do, né, que a gente viu lá em transações. O base, que que ele fala? O base fala que nem sempre quando eu comitar a transação vai tá sempre certo os dados, eventualmente vai estar correto. Ou seja, pode ocorrer alguma consulta nesse meio tempo que ele tá atualizando os dados que pegue o resultado errado. Tá? E mas qual que é, qual que é a ideia dele? É que ele sempre vai dar uma resposta, tá? Então ele tá sempre é isso, né? Então basically available, né? E daí é o eh acho que é soft state, eu acho que o o não lembro qual que era o oway exatamente, mas tá tá no slide. 
+
+É, eu acho que consist Enfim, não lembro qual o que que significa o se ali, mas a ideia dele é que ele sempre mexe dando resposta. Imagina lembrar. 
+
+Vocês tem que lembrar do conteo, gente. Não vou perguntar qual que é a qual que é a letra. A outra coisa eu perguntei. Dessa vez não vão perguntar porque vocês t matéria suficiente para não ter que perguntar isso daí. Eh, 
+
+mas tá tranquilo. O teorema CAP, não. 
+
+Teorema CAP também, tá? Lembra também sobre que que é o verde? que é o ácido e que que é o teorema K, tá? E daí, gente, eu lembra só dos tipos de bancos de dados, não ciclo, né? Quais tipos que existem? 
+
+Chave, valor. 
+
+Então, banco de dados, chave valor, né? O baseado em documentos, gráficos e colunares, tá? Então, aqui tem aqui, ó, é soft stage consist Eh, que é essa ideia aqui, né, que o sistema pode mudar o número do tempo e vete uma inconsciência que eventualmente vou ter uma consistência, mas pode ocorrer uma consulta que vai dar um resultado errado, tá? E daí, qual que é a diferença entre os dois, né? Que o CD garante que os dados sempre estarão corretos, mas o base vai garantir essa disponibilidade. Então, essa é a diferença dos dois. E lembrando que a grande desvantagem do do sistema base é que eu não garanto que vai ter essa transação, que esse resultado da minha consulta vai estar correta e isso pode cadear alguns problemas, né? Então é é essa a ideia. 
+
+Professor tem uma dúvida do inglês agora. Pode 
+
+pode. 
+
+Eventually não é finalmente 
+
+é event não exatamente finalmente é algum momento vai acontecer. 
+
+É diferente não é eventualmente. 
+
+Acho que É, é diferente. A gente utiliza é diferente, né? Em algum momento a gente vai considerar que ele vai, uma hora vai ficar consistente. Ótimo eventualmente 
+
+é eventualmente 
+
+eventualmente 
+
+é uma hora ou pode 
+
+tem certeza? Tem certeza? Isso vai ocorrer no português não necessariamente. 
+
+Mas o certeza isso 
+
+no inglês você tem uma vai ocorrer quando você não sabe 
+
+então, mas o o esse ideia do evente ele pode não acontecer também, tá? Então pegando aí a a coisa, pode ser que não tenha essa questão da consistência e daí é um problema em termos do de consulta do banco, tá gente? Vou rápido que já são 10:20\. Ai meu Deus, a gente pode fazer uma outra aula, né? Oi. 
+
+Vamos fazer uma outra aula pegar aula. Olha, nós temos matéria para pregar do Davi. Tá grandando vergonha. Já acabou a matéria. 
+
+Tem aula do menor ali também. Já acabou a matéria. 
+
+Então gente, eu assim eu até posso perguntar para algum professor ali se ele só que eu não vendo nada. Eu acho que o Anderson vai pegar que ele ainda tem matéria para dar para vocês. 
+
+Não, Anderson não. O Anderson 
+
+é acabou já, professor. Que que só eu na cara? 
+
+Eu que gostaria de saber isso, professor. O Anderson já acabou. Agora ele tá dando as aulas. Só para fazer projeto. 
+
+É, seria melhor pessoa do que passar. 
+
+Quer que a gente peça? 
+
+É, dou uma perguntada pro pro Lucão para mandar e-mail. Manda e-mail, Lucão. 
+
+Lucão, solta os e-mail aí. Já o Davi vai, o Davi vai dar rapidinho. Ó, 
+
+é 
+
+professora, a única pessoa que não dá aula aqui para ninguém é a senhora. Os outros já terminaram o que tá Queijo também tem o queijo terminou no primeiro dia. Sen que a gente tá vendo, ó, que a gente não tem, 
+
+ó, que a gente tá adorando fazer a matéria com vocês, tá gente? Então, então vou vou fazer o seguinte então, tá? Eu vou então conversar, ver se dá para eu pegar a aula de alguém. Na pior dos casos, vamos deixar marcado quinta-feira naquele naquele horário, tá? Eh, se eu conseguir pegar a aula de alguém, daí a gente não faz quinta, eu faço aula, mas daí eu pedi é segunda do Anders tem aula segunda. 
+
+Professor, obrigadão aí, hein? Show de bola. 
+
+É professor, pega o K. 
+
+Mas tem o Marcos vai chorar. Cadê o Marcos? Do K não tem aula sobrando. 
+
+É, não. Kend aula sobrando. O Kend não tem aula sobrando. Eu não consigo pegar dele. 
+
+E o Anderson já vai ter que pegar uma dele. 
+
+Ele vai pegar uma dele essas próximas semanas, 
+
+tá? Então do K mandar teria que pegar se o Anderson já terminar a matéria, daí eu vejo com eles. Então 
+
+s b 
+
+é Gente, vai faltar só uns exercícios sobre parte mesmo aqui, que era bem importante, na verdade, a gente vê, mas aí eu vejo isso daí. 
+
+Qualquer coisa a gente vai ter que ver na outra 
+
+na quinta-feira mesmo.
