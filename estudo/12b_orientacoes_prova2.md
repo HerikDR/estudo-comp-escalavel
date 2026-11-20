@@ -2,6 +2,7 @@
 
 > **Fonte:** transcrição automática da aula de revisão (`fontes/aulas/revisao.txt`). A transcrição tem muitos erros de reconhecimento de fala ("Radup" = Hadoop, "trads" = threads, "MEP" = map etc.); o conteúdo abaixo foi interpretado a partir do contexto. Quando a fala é ambígua, isso está indicado.
 > **Situação:** a aula **não terminou**. A revisão cobriu **programação paralela**, **Big Data/Hadoop/HDFS/MapReduce** e **NoSQL/CAP/BASE**. Os exercícios de **Spark, SparkSQL, álgebra/otimização de consultas e algoritmos de join** ficaram para uma **aula extra** (ver §7).
+> **Atualização:** a aula extra já aconteceu; o que ela disse está em [12c](12c_orientacoes_prova2_revisao2.md), que **prevalece onde houver conflito** (sem código na prova, exceto Spark; Spark/SparkSQL/otimização/joins deixam de ser "pendentes"; direção da seta do grafo confirmada como T1 → T3).
 > **Prova:** P2, **27/11**. Material de cada tópico: [lista de tópicos com links](12_joins_spark_revisao_prova.md#b1-tópicos-da-prova).
 
 ---
