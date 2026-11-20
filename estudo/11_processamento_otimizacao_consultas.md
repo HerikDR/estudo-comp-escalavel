@@ -1,91 +1,517 @@
-# Aula 11 — Processamento e otimização de consultas (versão P2)
+# Aula 11 — Processamento e otimização de consultas
 
-> Aula de 06/11 · Profa. Larissa C. Shimomura
-> **Filtro:** [12c](12c_orientacoes_prova2_revisao2.md).
-> **Cai:** **árvore de consulta** (respeitando os parênteses) e **otimização baseada em regras**: "quais heurísticas aplicar e por quê" / "identifique duas otimizações e justifique" (Ex. 7 da lista P2, **certeza**). Algoritmos de junção estão em [12](12_joins_spark_revisao_prova.md).
-> **Não cai em profundidade:** otimização **baseada em custo** ("matéria de mestrado"). Fica só a ideia geral (o Ex. 8 da lista pergunta isso, mas não foi trabalhado em aula).
-> **Cortado desta versão:** contas de seletividade e de fator de seleção de junção, histogramas detalhados, catálogo do SGBD, gerador de código, treino de contas. A versão completa está no histórico do git.
+> **Computação Escalável (2COP022)** · Profa. Larissa C. Shimomura · Aula de **06/11** (os slides 12–24 da Aula 10 são o começo desta mesma aula)
+> **Tópicos:** etapas do processamento de consultas, árvore de consulta (álgebra relacional), equivalências algébricas, otimização **heurística** (*selection/projection push-down*, trocar × por ⋈, o algoritmo em 6 passos), exercício "Aquarius" passo a passo, otimização **por custo** (componentes de custo, seletividade, algoritmos de seleção e de junção, fator de seleção de junção, estimativa de cardinalidade, *data skew*, histogramas), gerador de código e processador
+> **Pré-requisitos:** notação de álgebra relacional (σ, π, ×, ⋈) — revisão no material complementar [11a — Introdução à Álgebra Relacional](11a_introducao_algebra_relacional.md); [Aula 10](10_spark_pratica_sparksql.md) (SparkSQL, Catalyst, `explain`)
+> **Tempo estimado de estudo:** 3 h (é a aula com mais exercícios "de lápis e papel")
 
----
+> **Esta aula não tem código Java/Scala.** As questões de prova são de **desenhar e otimizar árvores de consulta** e de **fazer contas** (seletividade, fator de junção, cardinalidade). O treino no final segue esse formato.
 
-## 1. Etapas do processamento de consulta
-
-```mermaid
-flowchart LR
-    Q["SQL"] --> E1["Varredura, análise<br/>e validação"] -->|"árvore de consulta"| E2["Otimizador"] -->|"plano de execução<br/>(árvore + algoritmos)"| E3["Gerador de código"] --> E4["Processador"] --> R["Resultado"]
-```
-
-- **Varredura:** identifica os tokens. **Análise sintática:** a consulta segue a gramática? **Validação:** os nomes existem no esquema?
-- **Otimizador:** gera um plano **suficientemente bom** (não necessariamente o ótimo) reordenando operadores por **equivalências algébricas**. No Spark, esse papel é do **Catalyst**.
+> **[P2] O que cai** ([orientações da 2ª revisão](12c_orientacoes_prova2_revisao2.md))
+> - **Árvore de consulta inicial** (respeitando os **parênteses**) e **otimização baseada em regras**: "quais heurísticas aplicar e **por quê**" / "identifique **duas** otimizações e justifique". **Lista P2, Ex. 7 (certeza)**, resolvido em §7.3.
+> - **A cascata de seleção sozinha não conta como otimização** (é equivalência); a otimização é o *push-down* que ela permite.
+> - **Algoritmos de junção** (§10) — ver também [Aula 12](12_joins_spark_revisao_prova.md).
+> - **Otimização por custo:** só a **ideia geral** ("é matéria de mestrado"). A lista P2 tem o **Ex. 8** (cardinalidade errada), não trabalhado em aula; resposta em §12.7.
 
 ---
 
-## 2. Árvore de consulta
+## Sumário
 
-- **Folhas** = relações; **nós internos** = operadores (σ, π, ×, ⋈).
-- Execução em **pós-ordem**: de baixo para cima, da esquerda para a direita.
-- **Árvore inicial** (tradução direta): produtos cartesianos embaixo, **uma σ com todas as condições** acima, **π** no topo.
-- **Respeite os parênteses:** `(Aluno × Matrícula) × Disciplina` → o 1º × é Aluno com Matrícula, e o resultado entra no 2º × com Disciplina. "Toma cuidado com os parênteses."
-- Na prova, escreva as **condições completas** (não abrevie com "...").
-
-| Símbolo | Operador | SQL / Spark |
-|---|---|---|
-| σ<sub>c</sub>(R) | Seleção (linhas) | `WHERE` / `filter` |
-| π<sub>a,b</sub>(R) | Projeção (colunas) | `SELECT` / `select` |
-| R × S | Produto cartesiano | `FROM R, S` |
-| R ⋈<sub>c</sub> S | Junção = σ<sub>c</sub>(R × S) | `JOIN ... ON` / `join` |
-
----
-
-## 3. Equivalências algébricas
-
-| Equivalência | Forma | Para que serve |
-|---|---|---|
-| **Cascata de seleção** | σ<sub>c1 ∧ c2</sub>(R) ≡ σ<sub>c1</sub>(σ<sub>c2</sub>(R)) | Separar as condições para cada uma descer sozinha |
-| **Cascata de projeção** | π<sub>L1</sub>(π<sub>L2</sub>(R)) ≡ π<sub>L1</sub>(R), se L1 ⊆ L2 | Criar/eliminar projeções intermediárias |
-| **Comutatividade de σ** | σ<sub>c1</sub>(σ<sub>c2</sub>(R)) ≡ σ<sub>c2</sub>(σ<sub>c1</sub>(R)) | Aplicar primeiro a mais restritiva |
-| **Comutatividade de × e ⋈** | R × S ≡ S × R; R ⋈ S ≡ S ⋈ R | Trocar a ordem das relações (**não** vale para *outer joins*) |
-
-> **A cascata de seleção sozinha NÃO é uma otimização.** É uma **equivalência**: a consulta executa exatamente igual. A otimização de fato é o *selection push-down* que ela permite.
+1. [Mapa da aula](#mapa-da-aula)
+2. [Por que isso está numa disciplina de computação escalável?](#1-por-que-isso-está-aqui)
+3. [Etapas do processamento de consulta](#2-etapas-do-processamento-de-consulta)
+4. [Varredura, análise e validação](#3-varredura-análise-e-validação)
+5. [Árvore de consulta](#4-árvore-de-consulta)
+6. [O otimizador e as equivalências algébricas](#5-o-otimizador-de-consultas)
+7. [Otimização heurística](#6-otimização-baseada-em-heurísticas)
+8. [O algoritmo em 6 passos e o exercício Aquarius](#7-algoritmo-heurístico-em-6-passos)
+9. [Otimização por custo](#8-otimização-baseada-em-estimativa-de-custo)
+10. [Algoritmos de seleção e seletividade](#9-algoritmos-de-seleção-e-seletividade)
+11. [Algoritmos de junção](#10-algoritmos-de-junção)
+12. [Fator de seleção de junção](#11-fator-de-seleção-de-junção)
+13. [Estimativa de cardinalidade, *skew* e histogramas](#12-estimativa-de-cardinalidade)
+14. [Gerador de código e processador](#13-gerador-de-código-e-processador-de-consulta)
+15. [Ponte com o Spark](#14-ponte-com-o-spark)
+16. [Treino](#15-treino)
+17. [Erros comuns / o que cai em prova](#erros-comuns--o-que-cai-em-prova)
+18. [Fontes](#fontes)
+19. [Conclusão para revisão](#conclusão-para-revisão)
 
 ---
 
-## 4. Otimização baseada em regras (heurísticas)
-
-Heurística = "regra que **geralmente funciona**". Ideia: aplicar primeiro o que **reduz os resultados intermediários**. O banco real usa **heurísticas + custo**; na disciplina, só heurísticas.
-
-| Regra | O que faz | Por quê (justificativa para a prova) |
-|---|---|---|
-| ***Selection push-down*** | Descer cada σ até a relação que tem os atributos dela | (1) A consulta continua **equivalente**; (2) **reduz o nº de tuplas** antes da operação mais custosa (junção/×); (3) só é possível porque o **atributo do filtro pertence a uma só relação** |
-| **Trocar × + σ por ⋈** | Um produto cartesiano seguido de uma σ que relaciona as duas tabelas vira junção | O × gera **todas** as combinações (\|R\| × \|S\|), quase todas inválidas e descartadas logo depois; a junção só gera os pares válidos |
-| ***Projection push-down*** | Projetar só as colunas que ainda serão usadas, o mais perto das folhas | Reduz a **largura** das tuplas (memória, rede). Mantenha as colunas do resultado final, das seleções ainda não aplicadas e das junções |
-
-**Variação da 2ª revisão:** se a σ tiver condições sobre **as duas** relações (ex.: `valor > 100 ∧ nome = 'João'`), primeiro **quebre** em cascata e depois **desça cada uma** para sua relação. Se `nome` for **chave primária**, há "mais razão ainda": sobra **uma linha só**.
-
-**Trocar a ordem das junções** é otimização válida **só se justificada com o nº de tuplas** dos resultados intermediários. Sem os tamanhos no enunciado, não use como resposta.
-
-### Algoritmo heurístico em 6 passos
-
-1. **Quebrar** as seleções conjuntivas em cascata.
-2. **Descer** cada seleção o mais fundo possível.
-3. **Reordenar** as folhas para executar primeiro as seleções **mais restritivas**.
-4. **Combinar** × + σ em **junções**.
-5. **Quebrar** as projeções.
-6. **Descer** as projeções, criando novas quando preciso.
-
----
-
-## 5. Lista P2, Ex. 7 (certeza)
-
-**Esquemas:** Aluno(**ra**, nome, curso) · Matricula(**ra**, **cod_disc**, ano, nota) · Disciplina(**cod_disc**, nome_disc, creditos)
-
-**Consulta:** π<sub>nome, nome_disc, nota</sub>( σ<sub>curso='Computação' ∧ ano=2026 ∧ Aluno.ra=Matricula.ra ∧ Matricula.cod_disc=Disciplina.cod_disc</sub>( (Aluno × Matricula) × Disciplina ) )
-
-**(a) Árvore inicial:**
+## Mapa da aula
 
 ```mermaid
 flowchart TB
-    P["π nome, nome_disc, nota"] --> S["σ curso='Computação' ∧ ano=2026 ∧<br/>Aluno.ra=Matricula.ra ∧ Matricula.cod_disc=Disciplina.cod_disc"]
+    SQL["Consulta SQL"] --> VAV["Varredura · análise · validação"]
+    VAV --> AR["Árvore de consulta<br/>(álgebra relacional)"]
+    AR --> OPT{"Otimizador"}
+    OPT --> HEU["Heurísticas<br/>equivalências algébricas<br/>push-down · × → ⋈<br/>6 passos"]
+    OPT --> CUS["Custo estimado<br/>seletividade · cardinalidade<br/>histogramas · skew"]
+    CUS --> ALG["Escolha de algoritmos<br/>nested loops · sort-merge · hash join"]
+    HEU --> PLANO["Árvore otimizada<br/>+ algoritmos escolhidos"]
+    ALG --> PLANO
+    PLANO --> GEN["Gerador de código"] --> PROC["Processador de consulta"] --> RES["Resultado"]
+```
+
+> **O que observar:** as duas formas de otimizar se complementam. As **heurísticas** reorganizam a **árvore** (que operador vem antes); o **custo** escolhe **como** executar cada operador (qual algoritmo) e em que ordem juntar as tabelas, usando estimativas de **quantas tuplas** cada passo produz.
+
+---
+
+## 1. Por que isso está aqui?
+
+- As transformações de dados feitas com o **SparkSQL** são, muitas vezes, **equivalentes a uma consulta SQL** (slide).
+- Na [Aula 10](10_spark_pratica_sparksql.md) vimos que o **Catalyst** pega o plano lógico e gera um plano físico mais barato. Esta aula explica **o que** um otimizador desse tipo faz e **por quê**, com a teoria clássica de bancos de dados.
+- Em sistemas distribuídos, o ganho de otimizar é ainda maior: cada tupla a menos num resultado intermediário é uma tupla a menos para **mover pela rede** num shuffle.
+
+**Processamento de consulta** (slide) = todo o processo de execução da consulta, **desde o *parsing* do SQL até o retorno do resultado final** ao usuário.
+
+---
+
+## 2. Etapas do processamento de consulta
+
+```mermaid
+flowchart LR
+    Q["Consulta em linguagem<br/>de alto nível (SQL)"] --> E1["Varredura,<br/>análise e validação"]
+    E1 -->|"forma imediata:<br/>árvore de consulta"| E2["Otimizador<br/>de consulta"]
+    E2 -->|"plano de execução:<br/>árvore otimizada<br/>com algoritmos"| E3["Gerador de<br/>código"]
+    E3 -->|"código para<br/>executar a consulta"| E4["Processador<br/>de consulta"]
+    E4 --> R["Resultado"]
+```
+
+| Etapa | Entra | Sai |
+|---|---|---|
+| Varredura, análise e validação | Texto SQL | **Árvore de consulta** (representação interna) |
+| Otimizador | Árvore de consulta | **Plano de execução**: árvore otimizada + algoritmo escolhido para cada operador |
+| Gerador de código | Plano de execução (físico) | Instruções executáveis |
+| Processador de consulta | Código | Resultado, acessando armazenamento, buffers e índices |
+
+> **Comparação com o Spark (`explain`):** *Parsed Logical Plan* ≈ saída da análise; *Analyzed Logical Plan* ≈ depois da validação; *Optimized Logical Plan* ≈ heurísticas aplicadas; *Physical Plan* ≈ plano de execução com algoritmos ([Aula 10, §7](10_spark_pratica_sparksql.md#7-sparksql-e-o-otimizador-catalyst)).
+
+---
+
+## 3. Varredura, análise e validação
+
+| Fase | O que faz | Exemplo de erro detectado |
+|---|---|---|
+| **Varredura** (*scanner*) | Identifica os **tokens**: palavras-chave SQL, nomes de atributos, nomes de relações | — |
+| **Analisador sintático** (*parser*) | Verifica a **sintaxe**: a consulta segue as regras da gramática da linguagem? | `SELECT nome FORM aluno` (`FORM` no lugar de `FROM`) |
+| **Validação** | Verifica a **semântica**: os nomes de atributos e relações existem e fazem sentido **no esquema** do banco consultado? | `SELECT salario FROM aluno` quando `aluno` não tem a coluna `salario` |
+
+Depois dessas fases, cria-se uma **representação interna** da consulta, geralmente uma **árvore de consulta** com os operadores na forma de **álgebra relacional**.
+
+---
+
+## 4. Árvore de consulta
+
+A forma mais comum de representação é a **árvore algébrica de consulta**:
+- **relações de entrada** = **nós folha**;
+- **operações da álgebra relacional** = **nós internos**.
+
+**Lembrete dos operadores** (detalhes em [11a](11a_introducao_algebra_relacional.md)):
+
+| Símbolo | Operador | SQL | Efeito |
+|---|---|---|---|
+| σ<sub>c</sub>(R) | Seleção | `WHERE c` | Filtra **linhas** |
+| π<sub>a,b</sub>(R) | Projeção | `SELECT a, b` | Escolhe **colunas** |
+| R × S | Produto cartesiano | `FROM R, S` / `CROSS JOIN` | Toda tupla de R com toda tupla de S |
+| R ⋈<sub>c</sub> S | Junção | `JOIN ... ON c` | Pares que satisfazem `c` (= σ<sub>c</sub>(R × S)) |
+
+### Exemplo do slide
+
+```sql
+SELECT A.MATRICULA, A.PNOME, D.DEPARTAMENTO_NOME
+FROM ALUNO A, DEPARTAMENTO D
+WHERE A.CODIGO_DEPARTAMENTO = D.ID;
+```
+
+Em álgebra relacional: **π**<sub>A.MATRICULA, A.PNOME, D.DEPARTAMENTO_NOME</sub>(ALUNO A **⋈**<sub>A.CODIGO_DEPARTAMENTO = D.ID</sub> DEPARTAMENTO D)
+
+```mermaid
+flowchart TB
+    P["π A.MATRICULA, A.PNOME, D.DEPARTAMENTO_NOME"] --> J["⋈ D.ID = A.CODIGO_DEPARTAMENTO"]
+    J --> D["Departamento D"]
+    J --> A["Aluno A"]
+```
+
+### Como a árvore é executada
+
+A execução segue **pós-ordem**: **de baixo para cima e da esquerda para a direita**. Um operador executa quando as relações de que precisa (seus filhos) estão **disponíveis**.
+
+No exemplo: (1) Departamento e Aluno estão disponíveis (folhas); (2) executa-se a junção; (3) sobre o resultado, a projeção.
+
+### Exercício do slide: desenhe a árvore
+
+```sql
+SELECT A.PNOME, D.DEPARTAMENTO_NOME
+FROM ALUNO A, DEPARTAMENTO D
+WHERE A.CODIGO_DEPARTAMENTO = D.ID
+  AND A.IDADE > 20;
+```
+
+<details><summary><b>Resposta (árvore inicial, como no slide)</b></summary>
+
+```mermaid
+flowchart TB
+    P["π A.PNOME, D.DEPARTAMENTO_NOME"] --> S["σ A.IDADE > 20"]
+    S --> J["⋈ D.ID = A.CODIGO_DEPARTAMENTO"]
+    J --> D["Departamento D"]
+    J --> A["Aluno A"]
+```
+
+A tradução direta coloca o `WHERE` **inteiro** acima da junção. A condição de igualdade entre as tabelas vira a condição da **junção**, e `IDADE > 20` vira uma **seleção**. É uma árvore **correta**, mas **não otimizada**: a seleção poderia descer até `Aluno` ([§6.1](#61-selection-push-down-executar-a-seleção-o-mais-cedo-possível)).
+</details>
+
+---
+
+## 5. O otimizador de consultas
+
+**Uma mesma consulta pode ter várias árvores equivalentes** (mesmo resultado):
+
+```mermaid
+flowchart TB
+    subgraph T1["Árvore 1: seleção DEPOIS da junção"]
+        direction TB
+        p1["π MATRICULA, PNOME, DEPTO_NOME"] --> s1["σ A.IDADE > 20"] --> j1["⋈ D.ID = A.COD_DEPTO"]
+        j1 --> d1["Departamento D"]
+        j1 --> a1["Aluno A"]
+    end
+    subgraph T2["Árvore 2: seleção ANTES da junção"]
+        direction TB
+        p2["π MATRICULA, PNOME, DEPTO_NOME"] --> j2["⋈ D.ID = A.COD_DEPTO"]
+        j2 --> d2["Departamento D"]
+        j2 --> s2["σ A.IDADE > 20"] --> a2["Aluno A"]
+    end
+```
+
+> **O que observar:** as duas devolvem as mesmas tuplas. Na árvore 2, a junção recebe **menos tuplas** de Aluno, logo trabalha menos.
+
+**Objetivo do otimizador:** gerar o plano (a árvore) de **menor custo computacional**.
+
+**Atenção à palavra "otimizador" (slide):** ela é **enganosa**. O plano gerado **não é o ótimo**, e sim um **suficientemente bom**, porque há muitas variáveis que o sistema nem sempre conhece:
+- a forma como os arquivos ou tabelas estão armazenados;
+- as combinações de operadores;
+- as estimativas de quantas tuplas haverá na saída de cada operação.
+
+As otimizações se baseiam em **reordenar operadores** de forma que o resultado final seja **equivalente** ao da consulta de entrada. As reordenações permitidas vêm das **equivalências algébricas**.
+
+### 5.1 Equivalências algébricas
+
+Duas expressões E1 e E2 são **equivalentes** quando produzem **exatamente a mesma relação para qualquer instância válida** do banco. As mais conhecidas (slide):
+
+**(1) Cascata de seleção** — uma seleção com condição composta por vários `AND` pode virar uma sequência de seleções aninhadas:
+
+> σ<sub>c1 AND c2</sub>(R) ≡ σ<sub>c1</sub>(σ<sub>c2</sub>(R))
+
+```sql
+SELECT * FROM Aluno A WHERE A.ano_ingresso > 2024 AND A.idade < 25;
+```
+
+```mermaid
+flowchart LR
+    subgraph ANTES[" "]
+        direction TB
+        s["σ ano_ingresso > 2024 AND idade < 25"] --> a["Aluno A"]
+    end
+    subgraph DEPOIS[" "]
+        direction TB
+        s1["σ idade < 25"] --> s2["σ ano_ingresso > 2024"] --> a2["Aluno A"]
+    end
+    ANTES -->|"≡"| DEPOIS
+```
+
+> **Para que serve:** separadas, cada seleção pode **descer independentemente** na árvore até a tabela que ela usa.
+
+**(2) Cascata de projeção** — uma sequência de projeções aninhadas se reduz a **uma única projeção** com os atributos da **mais externa**:
+
+> π<sub>L1</sub>(π<sub>L2</sub>(R)) ≡ π<sub>L1</sub>(R), quando L1 ⊆ L2
+
+Exemplo do slide: π<sub>nome</sub>(σ<sub>idade<25</sub>(π<sub>nome, idade</sub>(Aluno))) ≡ π<sub>nome</sub>(σ<sub>idade<25</sub>(Aluno)). A projeção intermediária π<sub>nome, idade</sub> é redundante. Lida ao contrário, a regra permite **criar** projeções intermediárias (ver *projection push-down*).
+
+**(3) Comutatividade de seleção** — a ordem de duas seleções não altera o resultado:
+
+> σ<sub>c1</sub>(σ<sub>c2</sub>(R)) ≡ σ<sub>c2</sub>(σ<sub>c1</sub>(R))
+
+> **Para que serve:** permite aplicar **primeiro a seleção mais restritiva** (a que elimina mais tuplas).
+
+**(4) Comutatividade do produto cartesiano** — R × S ≡ S × R. (Muda só a ordem das colunas, que não importa numa relação.)
+
+**(5) Comutatividade da junção** — R ⋈<sub>c</sub> S ≡ S ⋈<sub>c</sub> R, para a **maioria** dos tipos de junção.
+
+> **Exceção importante:** a comutatividade **não vale** para **junções externas**: `Aluno LEFT OUTER JOIN Departamento` mantém todos os alunos; `Departamento LEFT OUTER JOIN Aluno` mantém todos os departamentos. São resultados diferentes. (Trocar a ordem **e** o lado — LEFT por RIGHT — preserva o resultado.)
+
+---
+
+## 6. Otimização baseada em heurísticas
+
+> **[P2] Cai.** Exercícios modelo: [Aula 12, ex. 8](12_joins_spark_revisao_prova.md#exercício-8--sparksql--álgebra-relacional--otimização) e §7.3 (lista P2, Ex. 7). **Justificativas que ela deu para o *selection push-down*:** (1) a consulta continua **equivalente** (é a ideia das regras); (2) **reduz o número de tuplas** antes da operação mais custosa, a **junção**; (3) só é possível porque o **atributo do filtro pertence a uma só relação**. Se a σ tiver condições sobre as duas relações (ex.: `valor > 100 ∧ nome = 'João'`), primeiro **quebre** em cascata e **desça cada uma** para sua relação; se `nome` for chave primária, há "mais razão ainda" (sobra uma linha só).
+
+A otimização pode ser **baseada em heurísticas** ou **baseada em estimativa de custo**.
+
+**Heurística** = aplicar "**regras que geralmente funcionam**". A ideia principal: **aplicar primeiro as operações que reduzem o tamanho dos resultados intermediários**. As regras da aula:
+
+1. ***Selection push-down***: executar a **seleção** o mais cedo possível;
+2. ***Projection push-down***: executar a **projeção** o mais cedo possível;
+3. **Evitar produto cartesiano** e trocá-lo por **junção**.
+
+### 6.1 *Selection push-down*: executar a seleção o mais cedo possível
+
+**Regra:** aplicar as seleções nas relações **antes** de qualquer junção ou produto cartesiano. Assim, a junção recebe **menos tuplas**.
+
+**Exemplo do slide** — mesmas tabelas usadas na aula toda:
+
+**Aluno**
+
+| ID | MATRICULA | PNOME | IDADE | CODIGO_DEPARTAMENTO |
+|---|---|---|---|---|
+| 0 | 12122 | João | 20 | 255 |
+| 1 | 89749 | Alice | 30 | 280 |
+| 2 | 12312 | Bob | 26 | 255 |
+| 3 | 54654 | José | 21 | 255 |
+
+**Departamento**
+
+| ID | DEPARTAMENTO_NOME |
+|---|---|
+| 255 | Computação |
+| 280 | Geografia |
+
+**Sem push-down** (σ acima da junção): a junção produz **4 tuplas** (todo aluno tem departamento) e só depois a seleção descarta o João.
+
+| ID | MATRICULA | PNOME | IDADE | COD_DEPTO | DEPARTAMENTO_NOME |
+|---|---|---|---|---|---|
+| 0 | 12122 | João | 20 | 255 | Computação |
+| 1 | 89749 | Alice | 30 | 280 | Geografia |
+| 2 | 12312 | Bob | 26 | 255 | Computação |
+| 3 | 54654 | José | 21 | 255 | Computação |
+
+**Com push-down** (σ<sub>IDADE>20</sub> direto sobre Aluno): João (idade **20**, que **não** é > 20) sai **antes**; a junção recebe 3 alunos e produz **3 tuplas**.
+
+| ID | MATRICULA | PNOME | IDADE | COD_DEPTO | DEPARTAMENTO_NOME |
+|---|---|---|---|---|---|
+| 1 | 89749 | Alice | 30 | 280 | Geografia |
+| 2 | 12312 | Bob | 26 | 255 | Computação |
+| 3 | 54654 | José | 21 | 255 | Computação |
+
+> **Escala:** aqui a economia é de 1 tupla. Com 10 milhões de alunos e um filtro que mantém 1%, a junção passa a receber 100 mil tuplas em vez de 10 milhões. Em Spark, isso é 99% menos dados no shuffle da junção.
+
+### 6.2 *Projection push-down*: executar a projeção o mais cedo possível
+
+**Regra:** **descartar as colunas desnecessárias o mais perto possível das tabelas originais**, usando também a **cascata de projeção**. Isso **reduz a largura dos registros**, economizando memória RAM (e, em sistemas distribuídos, rede).
+
+**Que colunas manter?** Numa tabela, só sobrevivem as colunas que algum operador **acima** ainda vai usar: as do **resultado final** (π do topo), as de **condições de seleção** que ainda não foram aplicadas e as de **condições de junção**.
+
+**Exemplo do slide** — *"Nome dos departamentos que têm alunos com idade > 20"*:
+
+π<sub>D.DEPARTAMENTO_NOME</sub>(σ<sub>A.IDADE>20</sub>(Departamento D ⋈<sub>D.ID = A.CODIGO_DEPARTAMENTO</sub> Aluno A))
+
+```mermaid
+flowchart LR
+    subgraph ANTES["Antes"]
+        direction TB
+        p["π D.DEPARTAMENTO_NOME"] --> s["σ A.IDADE > 20"] --> j["⋈ D.ID = A.COD_DEPTO"]
+        j --> d["Departamento D"]
+        j --> a["Aluno A<br/>(5 colunas)"]
+    end
+    subgraph DEPOIS["Depois do projection push-down"]
+        direction TB
+        p2["π D.DEPARTAMENTO_NOME"] --> s2["σ A.IDADE > 20"] --> j2["⋈ D.ID = A.COD_DEPTO"]
+        j2 --> d2["Departamento D"]
+        j2 --> pa["π A.CODIGO_DEPARTAMENTO, A.IDADE"] --> a2["Aluno A"]
+    end
+```
+
+> **O que observar:** de Aluno, só são necessárias `CODIGO_DEPARTAMENTO` (para a junção) e `IDADE` (para a seleção, que nesse slide continua acima da junção). `ID`, `MATRICULA` e `PNOME` são descartadas **logo na leitura**: cada tupla de Aluno passa de 5 para 2 colunas. Departamento já tem só as 2 colunas necessárias (`ID` para a junção, `DEPARTAMENTO_NOME` para o resultado).
+
+### 6.3 "Projection push-down — é possível aqui?" (slide)
+
+Consulta: π<sub>A.MATRICULA, A.PNOME, D.DEPARTAMENTO_NOME</sub>(σ<sub>A.IDADE>20</sub>(Departamento D ⋈<sub>D.ID = A.CODIGO_DEPARTAMENTO</sub> Aluno A))
+
+<details><summary><b>Resposta e raciocínio</b></summary>
+
+**Sim, mas o ganho é pequeno.** De Aluno, ainda são necessárias:
+- `MATRICULA` e `PNOME` → estão no **resultado final**;
+- `IDADE` → usada pela **seleção** acima;
+- `CODIGO_DEPARTAMENTO` → usada pela **junção**.
+
+Só **`ID`** pode ser descartada: π<sub>MATRICULA, PNOME, IDADE, CODIGO_DEPARTAMENTO</sub>(Aluno). Se a seleção também for empurrada para baixo, dá para aplicar σ<sub>IDADE>20</sub> **antes** e projetar depois, descartando também `IDADE`:
+
+π<sub>MATRICULA, PNOME, CODIGO_DEPARTAMENTO</sub>(σ<sub>IDADE>20</sub>(Aluno))
+
+**Lição:** o *projection push-down* rende mais quando a consulta usa **poucas** colunas de tabelas **largas**. Quando quase todas as colunas são necessárias, sobra pouco a cortar.
+</details>
+
+### 6.4 Evitar produto cartesiano: trocá-lo por junção
+
+**Regra:** se uma consulta tem um **produto cartesiano seguido de uma seleção que relaciona as duas tabelas**, o produto deve ser **substituído por uma junção**.
+
+**Por quê:** o produto cartesiano gera **todas** as combinações (|R| × |S| tuplas), quase todas inúteis; a junção processa **só os cruzamentos válidos**.
+
+**Lembrete:** uma junção pode ser definida como **produto cartesiano seguido de seleção**:
+
+> R ⋈<sub>c</sub> S ≡ σ<sub>c</sub>(R × S)
+
+**Exemplo do slide:** Aluno (4 tuplas) × Cursos (3 tuplas) = **12** combinações; dessas, só as **4** com `codigo_curso = id` interessam. A junção chega direto nas 4.
+
+```mermaid
+flowchart LR
+    subgraph ANTES["Antes: 4 × 2 = 8 tuplas intermediárias"]
+        direction TB
+        p["π MATRICULA, PNOME, DEPTO_NOME"] --> s["σ D.ID = A.COD_DEPTO"] --> x["×"]
+        x --> d["Departamento D"]
+        x --> a["Aluno A"]
+    end
+    subgraph DEPOIS["Depois: só os 4 pares válidos"]
+        direction TB
+        p2["π MATRICULA, PNOME, DEPTO_NOME"] --> j["⋈ D.ID = A.COD_DEPTO"]
+        j --> d2["Departamento D"]
+        j --> a2["Aluno A"]
+    end
+```
+
+> Com 1 milhão de alunos e mil departamentos, o produto teria **1 bilhão** de tuplas intermediárias; a junção, 1 milhão.
+
+---
+
+## 7. Algoritmo heurístico em 6 passos
+
+Algoritmo básico (slide) para aplicar as regras heurísticas:
+
+| Passo | Ação | Equivalência / regra usada |
+|---|---|---|
+| **1** | **Quebrar** as seleções com condições conjuntivas (`AND`) em uma **cascata** de seleções | Cascata de seleção |
+| **2** | **Mover** cada seleção **o mais profundo possível** na árvore | *Selection push-down* (comutatividade de σ com × e ⋈) |
+| **3** | **Reordenar** os nós folha de modo que as **seleções mais restritivas** sejam executadas **primeiro** | Comutatividade (e associatividade) de × e ⋈ |
+| **4** | **Combinar** produtos cartesianos com as seleções logo acima deles para formar **junções** | σ<sub>c</sub>(R × S) ≡ R ⋈<sub>c</sub> S |
+| **5** | **Quebrar** as projeções, quando possível | Cascata de projeção |
+| **6** | **Mover** as projeções quebradas **o mais profundo possível**, criando novas projeções quando necessário | *Projection push-down* |
+
+### 7.1 Exercício 1 — árvore inicial
+
+**Consulta (SQL):**
+
+```sql
+SELECT Unome
+FROM Funcionario, Trabalha_em, Projeto
+WHERE Projnome = 'Aquarius' AND Projnumero = Pnr
+  AND FCpf = Cpf AND Data_nasc > '31-12-1957';
+```
+
+**Relações:** `Funcionario(Cpf, Unome, Data_nasc, Telefone)`, `Trabalha_em(Pnr, FCpf)`, `Projeto(Projnumero, Projnome)`.
+
+**Em álgebra relacional:**
+
+π<sub>Unome</sub>(σ<sub>Projnome='Aquarius' ∧ Projnumero=Pnr ∧ FCpf=Cpf ∧ Data_nasc>'31-12-1957'</sub>((Funcionario × Trabalha_em) × Projeto))
+
+> **Leitura da consulta:** "sobrenome dos funcionários nascidos depois de 1957 que trabalham no projeto Aquarius". `Trabalha_em` liga funcionário (FCpf → Cpf) e projeto (Pnr → Projnumero).
+
+**Árvore inicial** (tradução direta: produtos cartesianos embaixo, uma seleção gigante acima, projeção no topo):
+
+```mermaid
+flowchart TB
+    P["π Unome"] --> S["σ Projnome='Aquarius' ∧ Projnumero=Pnr<br/>∧ FCpf=Cpf ∧ Data_nasc>'31-12-1957'"]
+    S --> X2["×"]
+    X2 --> X1["×"]
+    X2 --> PR["Projeto"]
+    X1 --> F["Funcionario"]
+    X1 --> T["Trabalha_em"]
+```
+
+> **Custo dessa árvore:** com 1000 funcionários, 5000 linhas em Trabalha_em e 50 projetos, o produto teria 1000 × 5000 × 50 = **250 milhões** de tuplas, para no fim sobrar um punhado.
+
+### 7.2 Exercício 2 — aplicando os 6 passos
+
+**Passo 1 — quebrar a seleção conjuntiva em cascata:**
+
+```mermaid
+flowchart TB
+    P["π Unome"] --> S1["σ Projnome = 'Aquarius'"] --> S2["σ Projnumero = Pnr"] --> S3["σ FCpf = Cpf"] --> S4["σ Data_nasc > '31-12-1957'"]
+    S4 --> X2["×"]
+    X2 --> X1["×"]
+    X2 --> PR["Projeto"]
+    X1 --> F["Funcionario"]
+    X1 --> T["Trabalha_em"]
+```
+
+**Passo 2 — mover cada seleção o mais fundo possível.** Cada seleção desce até o ponto mais baixo em que **todas as colunas que ela usa** estão disponíveis:
+- `Data_nasc > ...` usa só Funcionario → desce até **Funcionario**;
+- `Projnome = 'Aquarius'` usa só Projeto → desce até **Projeto**;
+- `FCpf = Cpf` usa Trabalha_em **e** Funcionario → fica logo acima do **× entre os dois**;
+- `Projnumero = Pnr` usa Projeto **e** Trabalha_em → só pode ficar acima do **× de cima**.
+
+```mermaid
+flowchart TB
+    P["π Unome"] --> S2["σ Projnumero = Pnr"] --> X2["×"]
+    X2 --> S3["σ FCpf = Cpf"] --> X1["×"]
+    X1 --> S4["σ Data_nasc > '31-12-1957'"] --> F["Funcionario"]
+    X1 --> T["Trabalha_em"]
+    X2 --> S1["σ Projnome = 'Aquarius'"] --> PR["Projeto"]
+```
+
+**Passo 3 — reordenar: seleções mais restritivas primeiro.** `Projnome = 'Aquarius'` seleciona **um único projeto** (muito restritiva), enquanto `Data_nasc > 1957` deve manter muitos funcionários. Então o primeiro cruzamento passa a ser **Projeto com Trabalha_em**, e Funcionario entra por último:
+
+```mermaid
+flowchart TB
+    P["π Unome"] --> S3["σ FCpf = Cpf"] --> X2["×"]
+    X2 --> S2["σ Projnumero = Pnr"] --> X1["×"]
+    X1 --> S1["σ Projnome = 'Aquarius'"] --> PR["Projeto"]
+    X1 --> T["Trabalha_em"]
+    X2 --> S4["σ Data_nasc > '31-12-1957'"] --> F["Funcionario"]
+```
+
+> **O que observar:** agora o primeiro cruzamento envolve **1 projeto** com Trabalha_em, o que gera poucas tuplas. Só depois entra Funcionario. As condições de ligação também trocaram de lugar: `Projnumero = Pnr` fica embaixo e `FCpf = Cpf` em cima.
+
+**Passo 4 — combinar × + σ em junções:**
+
+```mermaid
+flowchart TB
+    P["π Unome"] --> J2["⋈ FCpf = Cpf"]
+    J2 --> J1["⋈ Projnumero = Pnr"]
+    J1 --> S1["σ Projnome = 'Aquarius'"] --> PR["Projeto"]
+    J1 --> T["Trabalha_em"]
+    J2 --> S4["σ Data_nasc > '31-12-1957'"] --> F["Funcionario"]
+```
+
+**Passos 5 e 6 — quebrar e descer as projeções** (árvore final otimizada). Em cada ramo, mantêm-se só as colunas usadas acima:
+- de **Projeto**: só `Projnumero` (para a junção com Trabalha_em);
+- de **Trabalha_em**: `Pnr` (junção com Projeto) e `FCpf` (junção com Funcionario);
+- de **Funcionario**: `Unome` (resultado) e `Cpf` (junção).
+
+```mermaid
+flowchart TB
+    P["π Unome"] --> J2["⋈ FCpf = Cpf"]
+    J2 --> J1["⋈ Projnumero = Pnr"]
+    J1 --> PP["π Projnumero"] --> S1["σ Projnome = 'Aquarius'"] --> PR["Projeto"]
+    J1 --> PT["π Pnr, FCpf"] --> T["Trabalha_em"]
+    J2 --> PF["π Unome, Cpf"] --> S4["σ Data_nasc > '31-12-1957'"] --> F["Funcionario"]
+```
+
+> **Nota sobre o slide:** na árvore final do slide, a projeção sobre Trabalha_em está escrita como **π<sub>Projnumero, FCpf</sub>**. Trabalha_em não tem o atributo `Projnumero` (ela tem `Pnr` e `FCpf`), então o correto é **π<sub>Pnr, FCpf</sub>**. É um erro de digitação; a intenção é manter a coluna que liga ao projeto e a que liga ao funcionário.
+>
+> **Para ir além:** dá para inserir ainda uma π<sub>FCpf</sub> logo acima da junção `Projnumero = Pnr` (depois dela, só `FCpf` é usado). O slide não inclui esse passo.
+
+**Comparando o antes e o depois:**
+
+| | Árvore inicial | Árvore otimizada |
+|---|---|---|
+| Produtos cartesianos | 2 | 0 (viraram junções) |
+| Seleções | 1, no topo | 2, junto às tabelas |
+| Primeiro cruzamento | Funcionario × Trabalha_em (enorme) | 1 projeto ⋈ Trabalha_em (pequeno) |
+| Colunas carregadas | Todas, até o topo | Só as necessárias, desde as folhas |
+
+---
+
+### 7.3 Lista P2, Ex. 7 — Aluno × Matrícula × Disciplina (certeza)
+
+**Esquemas** (chave primária em negrito): Aluno(**ra**, nome, curso) · Matricula(**ra**, **cod_disc**, ano, nota) · Disciplina(**cod_disc**, nome_disc, creditos)
+
+**Expressão:** π<sub>nome, nome_disc, nota</sub>( σ<sub>curso='Computação' ∧ ano=2026 ∧ Aluno.ra=Matricula.ra ∧ Matricula.cod_disc=Disciplina.cod_disc</sub>( (Aluno × Matricula) × Disciplina ) )
+
+**(a) Árvore de consulta inicial.** **Respeite os parênteses:** o 1º × é Aluno com Matricula, e o resultado entra no 2º × com Disciplina. ("Poderia ser Matrícula × Disciplina primeiro, mas como a consulta diz que primeiro é Aluno e Matrícula, a representação correta é essa.") Escreva as condições **completas** (não abrevie com "...").
+
+```mermaid
+flowchart TB
+    P["π nome, nome_disc, nota"] --> S["σ curso='Computação' ∧ ano=2026 ∧<br/>Aluno.ra=Matricula.ra ∧<br/>Matricula.cod_disc=Disciplina.cod_disc"]
     S --> X2["×"]
     X2 --> X1["×"]
     X2 --> D["Disciplina"]
@@ -93,41 +519,533 @@ flowchart TB
     X1 --> M["Matricula"]
 ```
 
-**(b) Duas otimizações baseadas em regras** (gabarito da lista = 1 e 2; a 3 foi aceita pela professora em aula; "duas das três são válidas"):
+**(b) Duas otimizações baseadas em regras, com justificativa.** Ela mostrou três; "**duas dessas três** seriam respostas válidas". As duas do gabarito da lista são a 1 e a 2.
 
-1. **Selection push-down:** quebrar a σ conjuntiva em cascata e descer `curso='Computação'` para **Aluno** e `ano=2026` para **Matricula** (de onde vem `ano`). Justificativa: **reduz a cardinalidade** das relações base **antes** do produto cartesiano/junção, mantendo a consulta equivalente.
-2. **× + σ → ⋈:** combinar cada × com a condição de igualdade de chaves correspondente (`Aluno.ra = Matricula.ra` e `Matricula.cod_disc = Disciplina.cod_disc`). Justificativa: o × materializa **todas as combinações** (\|R\| × \|S\|), em sua maioria inválidas, que seriam descartadas logo em seguida.
-3. **Projection push-down em Disciplina:** relação por relação, ver o que é usado depois. Aluno (ra, nome, curso) e Matricula (ra, cod_disc, ano, nota) usam **tudo**; em Disciplina só `cod_disc` e `nome_disc` → π<sub>cod_disc, nome_disc</sub>(Disciplina), descartando `creditos` antes da junção.
-
-**Árvore depois das três:**
+1. **Selection push-down.** Decompor a seleção conjuntiva em uma **cascata** de seleções individuais e movê-las o mais perto possível das folhas que contêm os atributos: `curso='Computação'` sobre **Aluno**, `ano=2026` sobre **Matricula** (de onde vem `ano`). **Justificativa:** reduz a **cardinalidade** das relações base antes que participem de operações custosas, como o produto cartesiano.
+2. **Trocar produto cartesiano + seleção por junção.** Combinar cada × com a condição de igualdade de chaves correspondente (`Aluno.ra = Matricula.ra` e `Matricula.cod_disc = Disciplina.cod_disc`), formando ⋈. **Justificativa:** o × gera **todas** as combinações (\|R\| × \|S\|), materializando um volume de registros inválidos que seriam descartados logo em seguida.
+3. **Projection push-down em Disciplina.** Relação por relação, o que é usado depois? **Aluno** usa curso, ra e nome; **Matricula** usa nota, ano, ra e cod_disc → nada a cortar. **Disciplina** usa só `cod_disc` e `nome_disc` → projetar π<sub>cod_disc, nome_disc</sub> antes da junção, descartando `creditos`.
 
 ```mermaid
 flowchart TB
     P["π nome, nome_disc, nota"] --> J2["⋈ Matricula.cod_disc = Disciplina.cod_disc"]
     J2 --> J1["⋈ Aluno.ra = Matricula.ra"]
     J2 --> PD["π cod_disc, nome_disc"] --> D["Disciplina"]
-    J1 --> SA["σ curso='Computação'"] --> A["Aluno"]
-    J1 --> SM["σ ano=2026"] --> M["Matricula"]
+    J1 --> SA["σ curso = 'Computação'"] --> A["Aluno"]
+    J1 --> SM["σ ano = 2026"] --> M["Matricula"]
 ```
 
-O outro exercício resolvido em aula (pedidos × clientes, "quais heurísticas e por quê") está em [12, Ex. 8](12_joins_spark_revisao_prova.md#exercício-8--sparksql--álgebra-relacional--otimização). O exemplo clássico dos slides (Funcionario/Trabalha_em/Projeto, "Aquarius") segue os mesmos 6 passos.
+> **O que não conta:** a **cascata de seleção** sozinha ("é uma equivalência; se a gente executar, executa exatamente da mesma forma"). **Trocar a ordem dos produtos** (ex.: Matricula × Disciplina primeiro) é equivalente, mas só vale como otimização **se você justificar com o número de tuplas** dos resultados intermediários; o enunciado não dá os tamanhos, então não use como resposta.
 
 ---
 
-## 6. Otimização por custo (só a ideia)
+## 8. Otimização baseada em estimativa de custo
 
-- Busca no espaço de planos o de **menor custo estimado**. As funções de custo são **estimativas**.
-- **Estimativa de cardinalidade:** prever quantas tuplas cada etapa intermediária vai retornar, com estatísticas do catálogo (nº de tuplas, valores distintos…). Sob **distribuição uniforme**: \|R\| × 1/nº de valores distintos (ex.: 1000 clientes, 3 estados → ≈ 334).
-- Erra com ***data skew*** (ex.: 60% dos clientes em SP), estatísticas desatualizadas, colunas correlacionadas, propagação de erros em árvores grandes. **Histogramas** ajudam.
+> **[P2]** Ela listou só a **ideia geral** da otimização por custo e da estimativa de cardinalidade: priorize os conceitos e as contas simples.
 
-**Lista P2, Ex. 8 — por que uma estimativa de cardinalidade errada piora o tempo de execução?** (não trabalhado em aula) O otimizador por custo usa a estimativa para escolher o **plano físico**. Se a previsão falha, ele calcula custos irreais e escolhe **algoritmos físicos inadequados** (ex.: um algoritmo de junção que só valia para entradas pequenas) e uma **ordem inadequada** para as operações.
+**Ideia (slide):** usar técnicas de otimização tradicionais que **pesquisam o espaço de soluções** (os planos possíveis) em busca de uma solução que **minimize uma função objetivo** (o custo).
+
+- As **funções de custo não são exatas**: são **estimativas**.
+- O **espaço de soluções é grande** (muitas ordens de junção × muitos algoritmos), então costuma haver um **limite** de quantos planos são analisados.
+
+### 8.1 Componentes de custo
+
+| Componente | O que mede |
+|---|---|
+| **Acesso a armazenamento secundário** | Transferir (ler e gravar) **blocos** de dados entre o disco e os buffers da memória principal |
+| **Armazenamento em disco** | Guardar em disco **arquivos intermediários** |
+| **Computação** | Realizar as operações **em memória** (comparações, ordenações, hashing) |
+| **Uso de memória** | **Número de buffers** de memória principal necessários |
+| **Comunicação** | Enviar a consulta e os resultados ao usuário final; **em sistemas distribuídos, inclui a transferência entre os computadores durante a avaliação da consulta** |
+
+> **Em Computação Escalável**, o último item é muitas vezes o **maior**: o shuffle do Spark é exatamente custo de comunicação.
+
+### 8.2 Escopo da aula (slide)
+
+Muitos desses custos dependem de existirem **índices** (estruturas como árvores que aceleram buscas) e do **tipo de armazenamento** (dados ordenados ou não). Por isso, a aula vê **só a ideia geral** da otimização por custo, com foco no **custo de computação**, medido em **número de tuplas**: os principais algoritmos e a **estimativa de cardinalidade**. O custo real deveria considerar o **acesso a blocos** conforme o armazenamento.
 
 ---
 
-## 7. Checklist
+## 9. Algoritmos de seleção e seletividade
 
-- [ ] Desenho a árvore inicial respeitando os parênteses
-- [ ] Sei que a cascata de seleção é equivalência, não otimização
-- [ ] Aplico e **justifico** selection push-down, × + σ → ⋈ e projection push-down
-- [ ] Resolvo o Ex. 7 da lista (árvore + duas otimizações justificadas)
-- [ ] Explico em uma frase a otimização por custo e por que uma cardinalidade errada atrapalha
+Operadores do banco têm algoritmos para **seleção**, **projeção** e **junção**.
+
+### 9.1 Pesquisa linear
+
+**Pesquisa linear** (força bruta): recupera **cada** tupla e testa se ela satisfaz a condição.
+- **Custo computacional:** o **tamanho da entrada** (|R| tuplas testadas).
+
+### 9.2 Seletividade de uma condição
+
+> **Seletividade(S) = tuplas que satisfazem a condição ÷ número total de tuplas da relação**, um número **entre 0 e 1**.
+
+| Valor | Significado |
+|---|---|
+| S = 0 | **Nenhuma** tupla satisfaz a condição |
+| S = 1 | **Todas** satisfazem |
+| S pequena | Condição **restritiva**: sobra pouco |
+
+**Exemplos do slide** — tabelas `Pedidos` (10.000 tuplas) e `Clientes` (1.000 tuplas):
+
+| Condição | Cálculo | Seletividade |
+|---|---|---|
+| 200 clientes têm `estado = 'PR'` | 200 / 1.000 | **0,2** |
+| `id = 001` em Pedidos, sendo `id` **chave** | 1 / 10.000 | **0,0001** |
+
+> Numa condição de igualdade sobre uma **chave**, a seletividade é sempre 1 / |R|: no máximo uma tupla passa.
+
+**Para a otimização:** queremos **diminuir ao máximo** o tamanho das relações intermediárias. **Quanto menor a seletividade, menor a relação de saída** da seleção, e por isso seleções de **seletividade baixa** devem ser aplicadas **primeiro** (é o passo 3 do algoritmo heurístico, agora com número).
+
+> **Pegadinha de vocabulário:** "seletividade **baixa**" = condição **muito** seletiva (filtra muito). O número pequeno é a **fração que sobra**.
+
+---
+
+## 10. Algoritmos de junção
+
+> **[P2] Na lista de tópicos ("principais algoritmos de junção").** Exercício modelo: dizer se o algoritmo proposto é adequado e sugerir outro ([Aula 12, ex. 10](12_joins_spark_revisao_prova.md#exercício-10--escolha-do-algoritmo-de-join)).
+
+Para **equijunção** (*inner join* com igualdade), R ⋈<sub>R.rid = S.sid</sub> S, três algoritmos:
+
+### 10.1 *Nested loops* (laços aninhados)
+
+O algoritmo **padrão**, de **força bruta**:
+
+```text
+para cada tupla t em R:            -- laço externo
+    para cada tupla s em S:        -- laço interno
+        se t.rid == s.sid:
+            emitir (t, s)
+```
+
+- **Custo:** **|R| × |S|** comparações.
+- **Vantagem:** não precisa de **nenhuma estrutura auxiliar** nem de ordenação; funciona para **qualquer** condição (até `<`, `>`, `LIKE`).
+
+### 10.2 *Sort-merge join* (ordenação e intercalação)
+
+1. **Ordena** R pela chave de junção (`rid`) e S pela sua (`sid`);
+2. **Varre as duas ao mesmo tempo**, como na intercalação do *mergesort*: avança o ponteiro do lado com a chave menor e emite os pares quando as chaves são iguais.
+
+```mermaid
+flowchart LR
+    R["R desordenada"] -->|"ordenar por rid"| RO["R: 1, 3, 3, 7, 9"]
+    S["S desordenada"] -->|"ordenar por sid"| SO["S: 3, 4, 7, 8"]
+    RO --> M["Varredura simultânea<br/>(merge)"]
+    SO --> M
+    M --> OUT["pares: (3,3), (3,3), (7,7)"]
+```
+
+- **Custo (slide):** custo de **ordenar R** + custo de **ordenar S** + **custo linear** da relação com **maior número de tuplas** (a varredura).
+- Ordenar custa da ordem de *n* log *n*; se as relações **já estão ordenadas** pela chave, sobra só a varredura linear.
+
+### 10.3 *Hash join*
+
+Usa uma **tabela hash** para verificar a existência das chaves:
+
+1. **Fase de construção (*build*):** escolhe-se uma das relações (digamos S) e constrói-se uma **tabela hash** indexada pela chave de junção (`sid`);
+2. **Fase de sondagem (*probe*):** para cada tupla de R, calcula-se o hash de `rid` e **procura-se** na tabela as tuplas de S com a mesma chave.
+
+```mermaid
+flowchart LR
+    subgraph BUILD["1. Build (relação S)"]
+        S["S"] -->|"h(sid)"| HT["Tabela hash<br/>bucket 0: sid 4, 8<br/>bucket 1: sid 3, 7<br/>..."]
+    end
+    subgraph PROBE["2. Probe (relação R)"]
+        R["cada tupla de R"] -->|"h(rid)"| LK["consulta o bucket<br/>e compara as chaves"]
+    end
+    HT --> LK
+    LK --> OUT["pares que casam"]
+```
+
+- **Custo (slide):** **|R| + |S|** (cada tupla é visitada uma vez) + o custo de **construir** a tabela hash de S.
+- **Requisito:** a tabela hash precisa **caber na memória**. Por isso se constrói sobre a relação **menor**.
+
+### 10.4 Comparação e quando usar cada um
+
+**Exemplo numérico** (ilustrativo, contando comparações/visitas de tupla): Clientes (1.000) ⋈ Pedidos (10.000).
+
+| Algoritmo | Conta | Ordem de grandeza |
+|---|---|---|
+| Nested loops | 1.000 × 10.000 | **10.000.000** |
+| Sort-merge | ordenar 1.000 (≈ 1.000 · log₂1.000 ≈ 10⁴) + ordenar 10.000 (≈ 10.000 · log₂10.000 ≈ 1,3·10⁵) + varrer 10.000 | **≈ 150.000** |
+| Hash join | construir com 1.000 + sondar 10.000 | **≈ 11.000** |
+
+**Regras gerais (slide; dependem da implementação de cada sistema):**
+
+| Situação | Algoritmo | Por quê |
+|---|---|---|
+| Cardinalidade **baixa** / entradas com **poucas tuplas** | **Nested loops** | Com poucas tuplas, o algoritmo que **não precisa de estrutura adicional** é adequado |
+| Cardinalidade **baixa a média** e **pelo menos uma relação cabe na RAM** | **Hash join** | A tabela hash precisa caber na memória |
+| Cardinalidade **alta** e as relações **não cabem na memória** | **Sort-merge** | O custo de ordenar **se paga** nesses casos (ordenação externa funciona em disco) |
+
+---
+
+## 11. Fator de seleção de junção
+
+**Fator de seleção de junção** = a fração das tuplas do produto cartesiano que **de fato** são juntadas:
+
+> **Fator de seleção de junção = tuplas geradas pela junção ÷ número de tuplas do produto cartesiano entre as duas relações**
+
+É um indicativo importante para escolher o algoritmo de menor custo.
+
+**Exemplo do slide** — `Clientes.id = Pedidos.cliente_id`, com Pedidos (10.000) e Clientes (1.000). Como `cliente_id` é **chave estrangeira**, **todo pedido tem exatamente um cliente**, então a junção gera **10.000** tuplas:
+
+> Fator = 10.000 ÷ (1.000 × 10.000) = 10.000 ÷ 10.000.000 = **0,001**
+
+> **Nota (slide):** podem existir clientes sem pedido, mas todo pedido tem um cliente. Por isso o resultado tem exatamente |Pedidos| tuplas. **Regra prática:** numa junção por chave estrangeira → chave primária, o resultado tem o tamanho da tabela do lado da chave estrangeira, e o fator é 1 ÷ |tabela da chave primária|.
+
+**Usando o fator para estimar o tamanho da saída:** |R ⋈ S| ≈ fator × |R| × |S|. Isso alimenta a decisão de **ordem das junções**: juntar primeiro os pares com resultado menor.
+
+---
+
+## 12. Estimativa de cardinalidade
+
+**Estimativa de cardinalidade** é um dos componentes principais da otimização por custo: **estimar o tamanho (nº de tuplas) do resultado de uma operação com base em estatísticas**. Ela permite:
+- **ordenar operações** para diminuir as tuplas intermediárias;
+- **selecionar os algoritmos** de menor custo (ver a tabela da [§10.4](#104-comparação-e-quando-usar-cada-um)).
+
+### 12.1 Metadados do catálogo do SGBD
+
+Para estimar custos, o SGBD guarda no **catálogo**:
+- número de tuplas de cada relação;
+- tamanho da tupla;
+- número de **blocos** ocupados pela relação;
+- número de **valores distintos** de cada atributo;
+- número **médio** de tuplas que satisfazem uma igualdade num atributo.
+
+### 12.2 Hipótese de distribuição uniforme
+
+**Exemplo do slide:** `Clientes` tem 1.000 tuplas e a coluna `estado` assume 3 valores: PR, SP e RJ. **Supondo distribuição uniforme**, cada estado tem 1/3 dos clientes:
+
+> Cardinalidade estimada de `estado = 'X'` = 1.000 × 1/3 ≈ **334** tuplas
+
+> (1.000 ÷ 3 = 333,3; o slide arredonda **para cima**, 334. É uma **estimativa**, então o arredondamento não importa; a fórmula sim: **|R| × 1 / nº de valores distintos**.)
+
+### 12.3 Assimetria de dados (*data skew*)
+
+**Raramente** a distribuição é uniforme. Se cerca de **60% dos clientes são de SP**:
+
+| Estado | Estimativa uniforme | Real (60% SP; resto dividido, por exemplo) | Erro |
+|---|---|---|---|
+| SP | 334 | **600** | estimativa ≈ 44% menor que o real |
+| PR | 334 | 200 | estimativa 67% maior |
+| RJ | 334 | 200 | estimativa 67% maior |
+
+**Consequência (slide):** o otimizador pode escolher, por exemplo, aplicar `estado = 'SP'` contando que ela **diminuirá muito** as tuplas para a próxima operação; por causa da assimetria, isso **não acontece**, e o tempo da consulta é afetado (talvez escolhendo um algoritmo de junção que só valia para entradas pequenas).
+
+> **Ligação com o Spark:** no notebook da Aula 10, 900 de 1000 vendas eram de SP e uma partição ficou com 95% do trabalho. No otimizador, o *skew* **engana a estimativa**; na execução distribuída, **desequilibra a carga**. A Aula 12 trata o *skew* no Spark.
+
+### 12.4 Histogramas
+
+Para lidar com isso, **coletam-se estatísticas sobre a distribuição dos dados**; uma forma comum de representá-las é o **histograma**: quantas tuplas há em cada valor (ou faixa de valores) do atributo.
+
+```mermaid
+xychart-beta
+    title "Clientes por estado: uniforme (estimado) × real"
+    x-axis ["PR", "SP", "RJ"]
+    y-axis "nº de clientes" 0 --> 700
+    bar [334, 334, 334]
+    line [200, 600, 200]
+```
+
+> **O que observar:** as barras são a hipótese uniforme; a linha é a distribuição real que um **histograma** guardaria. Com o histograma, a estimativa para SP passa a ser 600, e não 334.
+
+A estimativa de cardinalidade dá uma informação importante sobre o **custo estimado** de uma operação e, por fim, ajuda a **escolher os algoritmos**.
+
+### 12.5 Causas comuns de erro na estimativa (slide)
+
+| Causa | Exemplo / explicação |
+|---|---|
+| **Estatísticas desatualizadas** | O banco não atualizou as estatísticas depois de uma grande carga ou remoção de dados |
+| **Correlação entre colunas** | Supor **independência** entre colunas correlacionadas: `Cidade = 'São Paulo' AND Estado = 'SP'`. Multiplicar as seletividades (ex.: 0,1 × 0,6 = 0,06) **subestima** o resultado, pois toda linha com cidade São Paulo já tem estado SP (o certo seria ≈ 0,1) |
+| **Propagação de erros em árvores complexas** | Erros nos operadores de baixo **se multiplicam** a cada junção acima |
+| **Funções e expressões** | `WHERE UPPER(nome) = 'ANA'` frequentemente impede o uso das estatísticas da coluna `nome` (o banco não sabe a distribuição de `UPPER(nome)`) |
+
+### 12.6 Tópicos recentes (só citados no slide)
+
+- Uso de **algoritmos de *machine learning*** para estimar a cardinalidade;
+- Uso de **estruturas probabilísticas** para recuperar essas estimativas.
+
+(Os slides seguintes da aula mostram figuras da palestra de Carsten Binnig, TU Darmstadt, na sessão "*Query Optimization Unleashed*" da SIGMOD/PODS 2025; ficam como "Para ir além".)
+
+---
+
+### 12.7 Lista P2, Ex. 8 — por que uma cardinalidade errada piora a execução?
+
+> Não foi trabalhado em aula ("otimização por custo é matéria de mestrado"), mas está na lista.
+
+**Gabarito:** a estimativa de cardinalidade prevê **quantas tuplas** cada etapa intermediária vai retornar e é a base para o **otimizador baseado em custo** escolher o melhor **plano físico**. Quando a previsão falha, o otimizador calcula **custos irreais** e toma decisões ruins: escolhe **algoritmos físicos inadequados** (ex.: um algoritmo de junção que só valia para entradas pequenas) e define uma **ordem inadequada** para as operações.
+
+---
+
+## 13. Gerador de código e processador de consulta
+
+| Componente | Papel (slide) |
+|---|---|
+| **Gerador de código** | Traduz o **plano físico** do otimizador (a árvore otimizada com os algoritmos escolhidos) em **instruções executáveis** |
+| **Processador de consulta** | **Executa** essas instruções. Interage com a parte mais "baixo nível" do banco: **forma de acesso e armazenamento**, **gerenciamento de buffer**, **gerenciamento de índices** etc. |
+
+> No Spark, o equivalente é o *whole-stage code generation* (os `*(1)`, `*(2)` do `explain`) e a execução das tasks nos executors.
+
+---
+
+## 14. Ponte com o Spark
+
+| Conceito desta aula | Onde aparece no Spark (Aula 10) |
+|---|---|
+| Árvore de consulta / plano lógico | `explain(extended = true)`: *Parsed/Analyzed Logical Plan* |
+| Heurísticas (regras) | *Optimized Logical Plan*: o Catalyst aplica regras como empurrar filtros e projeções |
+| *Selection push-down* | `Filter` logo acima do `FileScan` |
+| *Projection push-down* | `FileScan csv [id_venda, categoria, valor, estado]`: só as colunas usadas são lidas |
+| Escolha de algoritmo | *Physical Plan*: `HashAggregate`, `SortMergeJoin`, `BroadcastHashJoin`… |
+| Comunicação como custo | `Exchange` (shuffle) |
+| Cardinalidade / skew | Estatísticas de tabela, AQE e o tema da Aula 12 |
+
+> **Prévia da Aula 12 (último slide):** **Broadcast Join** e **Hash Join no Spark**, e o problema do **data skew** no Spark, além de exercícios sobre o conteúdo para a prova. O *broadcast join* é um hash join distribuído em que a tabela **pequena** é enviada inteira a cada executor (a fase *build* acontece em todos), evitando o shuffle da tabela grande.
+
+---
+
+## 15. Treino
+
+### Árvores de consulta
+
+**T1 — Desenhe a árvore inicial e a otimizada.**
+`Produto(id, nome, preco, id_categoria)`, `Categoria(id, nome_cat)`.
+
+```sql
+SELECT P.nome
+FROM Produto P, Categoria C
+WHERE P.id_categoria = C.id AND C.nome_cat = 'Livros' AND P.preco < 50;
+```
+
+<details><summary><b>Gabarito T1</b></summary>
+
+**Inicial:** π<sub>P.nome</sub>(σ<sub>P.id_categoria=C.id ∧ C.nome_cat='Livros' ∧ P.preco<50</sub>(Produto × Categoria))
+
+**Otimizada** (passos: quebrar σ → descer σ → × + σ = ⋈ → descer π):
+
+```mermaid
+flowchart TB
+    P["π P.nome"] --> J["⋈ P.id_categoria = C.id"]
+    J --> PP["π nome, id_categoria"] --> SP["σ preco < 50"] --> PR["Produto P"]
+    J --> PC["π id"] --> SC["σ nome_cat = 'Livros'"] --> C["Categoria C"]
+```
+
+De Produto ficam `nome` (resultado) e `id_categoria` (junção); `preco` some depois do filtro. De Categoria fica só `id`.
+</details>
+
+**T2 — Três tabelas.** `Aluno(mat, nome, curso_id)`, `Matricula(mat_aluno, disc_id, nota)`, `Disciplina(id, titulo, creditos)`. Consulta: nomes dos alunos com **nota ≥ 9** em disciplinas de **4 créditos**. Escreva a álgebra inicial e a árvore otimizada.
+
+<details><summary><b>Gabarito T2</b></summary>
+
+**Inicial:** π<sub>nome</sub>(σ<sub>mat=mat_aluno ∧ disc_id=id ∧ nota≥9 ∧ creditos=4</sub>((Aluno × Matricula) × Disciplina))
+
+**Otimizada:**
+
+```mermaid
+flowchart TB
+    P["π nome"] --> J2["⋈ mat = mat_aluno"]
+    J2 --> J1["⋈ disc_id = id"]
+    J1 --> PM["π mat_aluno, disc_id"] --> SM["σ nota ≥ 9"] --> M["Matricula"]
+    J1 --> PD["π id"] --> SD["σ creditos = 4"] --> D["Disciplina"]
+    J2 --> PA["π mat, nome"] --> A["Aluno"]
+```
+
+Matricula e Disciplina, que têm seleções, são juntadas **primeiro** (passo 3); Aluno, sem filtro, entra por último. Aluno não tem seleção, mas tem projeção (`curso_id` sai).
+</details>
+
+**T3 — Esta transformação está correta?** Para cada item, diga se a árvore resultante é equivalente.
+
+(a) Trocar `Aluno LEFT OUTER JOIN Departamento` por `Departamento LEFT OUTER JOIN Aluno`.
+(b) Descer σ<sub>A.idade > D.idade_minima</sub> para logo acima de `Aluno`, abaixo da junção com `Departamento`.
+(c) Aplicar π<sub>nome</sub>(Aluno) **abaixo** da junção `Aluno.curso_id = Curso.id`.
+(d) Trocar σ<sub>A.curso_id = C.id</sub>(Aluno × Curso) por Aluno ⋈<sub>A.curso_id = C.id</sub> Curso.
+(e) Trocar σ<sub>idade>20</sub>(σ<sub>curso='CC'</sub>(Aluno)) por σ<sub>curso='CC'</sub>(σ<sub>idade>20</sub>(Aluno)).
+
+<details><summary><b>Gabarito T3</b></summary>
+
+(a) **Não.** Junções externas **não comutam**: a primeira mantém todos os alunos; a segunda, todos os departamentos.
+(b) **Não.** A condição usa uma coluna de **Departamento** (`idade_minima`); só pode ficar onde as duas tabelas estão disponíveis, isto é, acima do × (ou como condição da junção).
+(c) **Não.** A projeção descarta `curso_id`, que a junção acima ainda precisa. O correto é π<sub>nome, curso_id</sub>(Aluno).
+(d) **Sim.** É a definição de junção: σ<sub>c</sub>(R × S) ≡ R ⋈<sub>c</sub> S.
+(e) **Sim.** Comutatividade da seleção.
+</details>
+
+### Contas
+
+**C1 — Seletividade.** `Funcionario` tem 5.000 tuplas; 250 trabalham no departamento 7; `cpf` é chave. Calcule a seletividade de (a) `depto = 7`; (b) `cpf = '123'`; (c) qual aplicar primeiro numa cascata?
+
+<details><summary><b>Gabarito C1</b></summary>
+
+(a) 250 / 5.000 = **0,05**. (b) 1 / 5.000 = **0,0002**. (c) A de **menor** seletividade: `cpf = '123'` (sobra no máximo 1 tupla).
+</details>
+
+**C2 — Fator de seleção de junção.** `Departamento` (50 tuplas) ⋈ `Funcionario` (5.000 tuplas) por `Funcionario.depto = Departamento.id`, onde todo funcionário tem exatamente um departamento. Quantas tuplas a junção gera e qual o fator?
+
+<details><summary><b>Gabarito C2</b></summary>
+
+Cada funcionário casa com exatamente 1 departamento → **5.000 tuplas**. Produto cartesiano: 50 × 5.000 = 250.000. Fator = 5.000 / 250.000 = **0,02** (= 1/50).
+</details>
+
+**C3 — Cardinalidade.** `Pedidos` tem 12.000 tuplas; a coluna `status` tem 4 valores distintos. (a) Estimativa uniforme para `status = 'cancelado'`. (b) O histograma mostra 300 pedidos cancelados. Qual o erro da estimativa uniforme e que risco isso traz?
+
+<details><summary><b>Gabarito C3</b></summary>
+
+(a) 12.000 × 1/4 = **3.000**. (b) A estimativa é **10×** maior que o real (3.000 vs 300). O otimizador pode deixar de aplicar esse filtro cedo (achando que ele é pouco restritivo) ou escolher um algoritmo de junção pensado para entradas grandes (sort-merge), quando um nested loops ou hash join sobre 300 tuplas seria mais barato.
+</details>
+
+**C4 — Correlação.** `Cliente` tem 10.000 tuplas; 10% moram na cidade de São Paulo e 30% no estado SP. Qual a estimativa para `cidade = 'São Paulo' AND estado = 'SP'` supondo independência? Qual o valor real provável?
+
+<details><summary><b>Gabarito C4</b></summary>
+
+Independência: 10.000 × 0,10 × 0,30 = **300**. Mas todo cliente da cidade de São Paulo está no estado SP, então o real é ≈ 10.000 × 0,10 = **1.000**. A estimativa ficou ≈ 3× abaixo. É a causa de erro "correlação entre colunas".
+</details>
+
+### Escolha de algoritmo
+
+**A1 — Qual algoritmo de junção?** (a) Duas tabelas de 50 tuplas cada. (b) `Pedidos` (50 milhões, não cabe na RAM) ⋈ `UF` (27 tuplas). (c) Duas tabelas de 2 bilhões de tuplas cada, nenhuma cabe na memória. (d) Junção com condição `R.preco < S.preco_max`.
+
+<details><summary><b>Gabarito A1</b></summary>
+
+(a) **Nested loops**: poucas tuplas (2.500 comparações), sem custo de montar estruturas. (b) **Hash join**, construindo a tabela hash sobre `UF` (cabe facilmente na memória) e sondando com `Pedidos`. (No Spark, um *broadcast hash join*.) (c) **Sort-merge**: nenhuma cabe na RAM; o custo de ordenar se paga. (d) **Nested loops**: hash join e sort-merge (na forma da aula) servem para **igualdade** (equijunção); com desigualdade, o nested loops é o que funciona em geral.
+</details>
+
+**A2 — Custos.** R tem 2.000 tuplas e S tem 500. Calcule (contando tuplas, como na aula) o custo do nested loops e do hash join (construindo sobre S).
+
+<details><summary><b>Gabarito A2</b></summary>
+
+Nested loops: 2.000 × 500 = **1.000.000**. Hash join: |R| + |S| = 2.000 + 500 = **2.500** (mais a construção da tabela hash de S, que é proporcional a 500). Constrói-se sobre S por ser a **menor**.
+</details>
+
+---
+
+## Erros comuns / o que cai em prova
+
+1. **Árvore de consulta:** **folhas = relações**, **nós internos = operadores**; executa **de baixo para cima, da esquerda para a direita** (pós-ordem).
+2. **"Otimizador" não acha o ótimo**: acha um plano **bom o suficiente** com base em **estimativas**.
+3. **Junções externas não comutam** (LEFT/RIGHT OUTER).
+4. **Uma seleção só desce até onde todas as colunas que ela usa existem.** Condição com colunas de duas tabelas fica acima do cruzamento delas.
+5. **Uma projeção não pode descartar colunas usadas acima** (junção, seleção pendente, resultado).
+6. **σ<sub>c</sub>(R × S) ≡ R ⋈<sub>c</sub> S**: trocar × + σ por ⋈ é o passo 4.
+7. **Ordem dos 6 passos:** quebrar σ → descer σ → mais restritiva primeiro → × vira ⋈ → quebrar π → descer π.
+8. **Seletividade = fração que passa** (0 a 1). **Menor = mais restritiva** → aplicar primeiro.
+9. **Fator de seleção de junção = |R ⋈ S| ÷ (|R| × |S|).** FK → PK: o resultado tem o tamanho da tabela da FK.
+10. **Custos:** nested loops **|R|·|S|**; sort-merge **ordenar R + ordenar S + linear**; hash join **|R| + |S|** + construção.
+11. **Quando usar:** poucas tuplas → nested loops; uma cabe na RAM → hash; nenhuma cabe → sort-merge.
+12. **Distribuição uniforme:** |R| × 1 / nº de valores distintos. *Skew* engana essa estimativa; **histogramas** corrigem.
+13. **Correlação entre colunas** faz a multiplicação de seletividades **subestimar** o resultado.
+14. **Custo de comunicação** pesa muito em sistemas distribuídos (shuffle).
+
+---
+
+## Fontes
+
+- **Slides da aula:** Shimomura, L. C. *Computação Escalável — Introdução a processamento de Consultas, Aula 11 (06/11)*; e slides 12–24 de *Programação com Apache Spark (30/10)*, que antecipam o mesmo conteúdo.
+- **Tabela de operadores da álgebra relacional** citada no slide: <http://victorlimeira.github.io/banco_dados_web/aulas/semana04_alg_relaciona.pdf>
+- **Slides de Carsten Binnig** (TU Darmstadt), sessão "*Query Optimization Unleashed*", SIGMOD/PODS 2025, citados na parte de tópicos recentes: <https://2025.sigmod.org/warmup.shtml>
+- **Para ir além (fora de `fontes/`):** Elmasri, R.; Navathe, S. B. *Sistemas de Banco de Dados*, Pearson — capítulos de processamento e otimização de consultas (de onde vem o esquema `Funcionario`/`Trabalha_em`/`Projeto` do exercício Aquarius).
+- **Spark (ponte com a Aula 10):** *Spark SQL Performance Tuning* (estratégias de junção, AQE): <https://spark.apache.org/docs/3.5.0/sql-performance-tuning.html>
+
+---
+
+## Conclusão para revisão
+
+### Resumo em 10 pontos
+
+1. **Processamento de consulta:** varredura/análise/validação → **árvore de consulta** → **otimizador** → plano de execução → **gerador de código** → **processador**.
+2. **Varredura** (tokens), **análise sintática** (gramática), **validação** (nomes existem no esquema?).
+3. **Árvore de consulta:** folhas = relações; nós internos = operadores (σ, π, ×, ⋈); executada em **pós-ordem**.
+4. Uma consulta tem **várias árvores equivalentes**; o otimizador busca a de **menor custo**, que é **boa o suficiente**, não necessariamente ótima.
+5. **Equivalências:** cascata de σ, cascata de π, comutatividade de σ, de × e de ⋈ (**não** de outer joins).
+6. **Heurísticas:** *selection push-down*, *projection push-down*, trocar × por ⋈; ideia central: **reduzir cedo os resultados intermediários**.
+7. **6 passos:** quebrar σ → descer σ → restritivas primeiro → × + σ = ⋈ → quebrar π → descer π.
+8. **Custo:** estimado; componentes = disco, armazenamento intermediário, computação, memória e **comunicação**. **Seletividade** = fração que passa (menor = mais restritiva). **Fator de seleção de junção** = |R ⋈ S| / (|R|·|S|).
+9. **Junções:** **nested loops** (|R|·|S|; poucas tuplas), **hash join** (|R|+|S| + construção; uma relação cabe na RAM), **sort-merge** (ordenações + linear; relações grandes que não cabem).
+10. **Cardinalidade:** estimada pelo catálogo; a hipótese **uniforme** falha com ***skew***; **histogramas** ajudam; erros vêm de estatísticas velhas, colunas correlacionadas, propagação em árvores e funções no `WHERE`.
+
+### Tabela de conceitos-chave
+
+| Termo | Definição em uma linha | Quando usar / lembrar |
+|---|---|---|
+| Árvore de consulta | Representação da consulta em álgebra relacional | Saída da análise; base da otimização |
+| Pós-ordem | De baixo para cima, esquerda para direita | Ordem de execução da árvore |
+| Equivalência algébrica | Duas expressões com o mesmo resultado sempre | Justifica cada reordenação |
+| Cascata de seleção | σ<sub>c1∧c2</sub> ≡ σ<sub>c1</sub>(σ<sub>c2</sub>) | Passo 1 |
+| Cascata de projeção | π<sub>L1</sub>(π<sub>L2</sub>) ≡ π<sub>L1</sub> | Passos 5–6 |
+| *Selection push-down* | Seleção o mais cedo possível | Menos tuplas nas junções |
+| *Projection push-down* | Descartar colunas o mais cedo possível | Registros mais estreitos |
+| × → ⋈ | σ<sub>c</sub>(R × S) ≡ R ⋈<sub>c</sub> S | Evitar o produto cartesiano |
+| Otimização heurística | Regras que geralmente funcionam | Reorganizar a árvore |
+| Otimização por custo | Minimizar um custo **estimado** | Escolher ordem e algoritmos |
+| Seletividade | Tuplas que passam ÷ total | Menor → aplicar antes |
+| Nested loops | Compara todo par | Poucas tuplas; qualquer condição |
+| Sort-merge | Ordena e intercala | Relações grandes, fora da RAM |
+| Hash join | Build na menor + probe na maior | Uma relação cabe na RAM |
+| Fator de seleção de junção | \|R ⋈ S\| ÷ \|R × S\| | Estimar o tamanho da junção |
+| Cardinalidade | Nº de tuplas de um resultado | Base do custo |
+| *Data skew* | Distribuição não uniforme | Estimativas erradas |
+| Histograma | Distribuição real dos valores | Estimativas melhores |
+
+### Perguntas de autoavaliação
+
+<details><summary><b>1. Cite as etapas do processamento de consultas e o que sai de cada uma.</b></summary>
+
+**Varredura, análise e validação** → árvore de consulta; **otimizador** → plano de execução (árvore otimizada com algoritmos escolhidos); **gerador de código** → instruções executáveis; **processador** → resultado.
+</details>
+
+<details><summary><b>2. Por que se diz que a palavra "otimizador" é enganosa?</b></summary>
+
+Porque o plano gerado não é o ótimo, e sim um **suficientemente bom**. O otimizador trabalha com **estimativas** (de tamanho dos resultados, do armazenamento, das combinações de operadores) e explora só **parte** do enorme espaço de planos possíveis.
+</details>
+
+<details><summary><b>3. Explique <i>selection push-down</i> com o exemplo Aluno/Departamento.</b></summary>
+
+Aplicar σ<sub>IDADE>20</sub> diretamente sobre Aluno, **antes** da junção com Departamento. João (idade 20) é descartado antes, e a junção processa 3 alunos em vez de 4. Em tabelas grandes, isso reduz drasticamente o trabalho (e, num sistema distribuído, os dados enviados pela rede).
+</details>
+
+<details><summary><b>4. Por que a comutatividade da junção não vale para LEFT OUTER JOIN?</b></summary>
+
+Porque o LEFT OUTER JOIN preserva **todas as tuplas da relação da esquerda** (preenchendo com `null` quando não há par). Trocar a ordem muda qual relação é preservada, e portanto o resultado.
+</details>
+
+<details><summary><b>5. No exercício Aquarius, por que Projeto passa a ser juntada antes de Funcionario?</b></summary>
+
+Pelo passo 3: as **seleções mais restritivas** devem ser executadas primeiro. `Projnome = 'Aquarius'` deixa **um único projeto**, e juntá-lo primeiro com Trabalha_em gera um resultado intermediário pequeno (só quem trabalha no Aquarius). `Data_nasc > 1957` deve manter muitos funcionários, então Funcionario entra depois.
+</details>
+
+<details><summary><b>6. Defina seletividade e diga qual condição deve ser aplicada primeiro.</b></summary>
+
+Seletividade = tuplas que satisfazem a condição ÷ total de tuplas (entre 0 e 1). Aplica-se primeiro a de **menor** seletividade, que é a mais restritiva e produz a menor relação intermediária.
+</details>
+
+<details><summary><b>7. Compare os três algoritmos de junção quanto a custo e a quando usar.</b></summary>
+
+**Nested loops:** |R|·|S|; bom para entradas pequenas (não precisa de estrutura extra) e para condições que não são igualdade. **Hash join:** |R|+|S| + construção da tabela hash; exige que a relação de *build* caiba na memória; cardinalidade baixa a média. **Sort-merge:** ordenar R + ordenar S + varredura linear; bom para relações grandes que não cabem na memória (o custo da ordenação se paga), ou já ordenadas.
+</details>
+
+<details><summary><b>8. Como o <i>data skew</i> atrapalha a estimativa de cardinalidade e como os histogramas ajudam?</b></summary>
+
+A estimativa simples supõe **distribuição uniforme** (|R| / nº de valores distintos). Com *skew* (ex.: 60% dos clientes em SP), a estimativa para SP fica muito abaixo do real, e o otimizador pode escolher uma ordem ou algoritmo ruins. **Histogramas** guardam a distribuição real dos valores, permitindo estimar 600 em vez de 334.
+</details>
+
+### Checklist
+
+**Sei explicar…**
+- [ ] as 4 etapas do processamento de consultas
+- [ ] varredura × análise sintática × validação
+- [ ] árvore de consulta e ordem de execução
+- [ ] as 5 equivalências da aula (e a exceção dos outer joins)
+- [ ] as 3 heurísticas e o algoritmo de 6 passos
+- [ ] os componentes de custo (incluindo comunicação)
+- [ ] seletividade, fator de seleção de junção e cardinalidade
+- [ ] nested loops, sort-merge e hash join: custo e quando usar
+- [ ] *data skew*, histogramas e as causas de erro de estimativa
+
+**Sei fazer…**
+- [ ] traduzir SQL → álgebra relacional → árvore inicial
+- [ ] otimizar uma árvore passo a passo (o Aquarius sem olhar)
+- [ ] dizer se uma transformação de árvore é válida
+- [ ] calcular seletividade, fator de junção e cardinalidade uniforme
+- [ ] escolher o algoritmo de junção para um cenário
+
+### Ligação com a próxima aula
+
+A [**Aula 12**](12_joins_spark_revisao_prova.md) traz esses algoritmos para o mundo distribuído: **Broadcast Join** (um hash join em que a tabela pequena vai inteira para cada executor) e **Hash Join no Spark**, além do **data skew** como problema de **execução** (partições desequilibradas, como no notebook da Aula 10). A aula também terá **exercícios para a prova**. Para revisar a notação de álgebra relacional (σ, π, ρ, ×, ∪, ∩, −, ⋈, ÷, agrupamento), use o material complementar [11a](11a_introducao_algebra_relacional.md).

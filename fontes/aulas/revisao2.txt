@@ -1,0 +1,741 @@
+Na última aula a gente falou sobre as diferenças, né? Que para vocês lembrarem qual que é a diferença entre o ácid e o base, né? Então, lembra que o ácidou com com transação, a gente tem aquela questão da da transação, que a transação tem que ser convitada e assim, ou atualiza todo mundo ou não atualiza ninguém. Lembra lá do tio Face comite? Vocês lembram porque estava na prova, certo? Já o base, ele vai garantir a disponibilidade dos dados, mas não vai garantir que as transações vão estar comitadas de fato e atualizadas todos os dados ali, né? São, ah, aqui voltando, né? Então, assim, o base ele se popularizou bastante eh nos bancos de dados, no ciclo, né? Ele segue esse teorema base, que é basicamente falando assim: "Eu vou estar sempre disponível para responder eh a sua consulta. Porém, quando você mandar uma transação, quando você realizar uma transação e comitar os dados, eh, pode ser que eu não atualize na hora. Eu vou te mandar a resposta, mas eu vou continuar atualizando, vou continuar atualizando no no background, certo? E o que que pode acontecer nesse caso? Que eu faço uma consulta e o background ainda não terminou de atualizar. Então, pode ser que os dados estejam inconsistentes. eh, momentaneamente ali, que é um problema do basic. Até pro pessoal que tava na aula, eu passei a o podcast lá do Spongebre, eh, e ele fala exatamente isso, que o maior crítica dele pro pessoal da Google na época que isso saiu, é que justamente a gente tinha essa ideia que uma transação ao ser comitada não ia ser, não precisava estar consistente eh imediatamente, tá? Então, essa é a diferença principal que a gente precisa. precisa lembrar entre o o de vez. E daí por esse teorema aqui vocês acabam lembrando lá do teorema cap também. Eu tava vendo a cara do Adrian para me perguntar isso já. Eh, eu não coloquei aqui, mas o teorema Cap eh, deixa eu voltar lá na aula que a gente tá vendo teorema CP, 
+
+a consistência, disponibilidade e persistência. 
+
+Isso. É, então pera aí, deixa eu só fazer estendida. Acho que era aqui. 
+
+Tem que ter que lembrar dos vezes do big dat ainda. Ó o tanto de coisa que tem que 
+
+Não, não é, você lembra que a gente fizou um negócio de tempo real? A gente até conversou uns tempo atrás, sistema de tempo real, acho que era algo assim, né? Será? que o B por não ter essa garantia da causar desse tipo de sistema informação tá atualizado. Você lembra essa regida? Não sei se é esse termo tempo real. 
+
+Pervasivos. 
+
+Hã? 
+
+Pervasivos 
+
+não é pervasivo de IT, né? Não é de tempo real mesmo. Mas o tempo real não é com relação à velocidade da resposta, né? Da consistência do corpo. Não lembro exatamente. Mas o que eu tava pensando ali é o o que rub é esse, professor? 
+
+Ah, tá. Aí você já me pegou, né? Eu não sei te responder. Acontece isso, né? Eh, você tem a resposta, mas não necessariamente ela é a mais atual. Às vezes ela vai atualizar depois quando tem outro membro da equipe. 
+
+Ah, então daí eu não sei por causa que geralmente a gente trabalha muito com esse teorema BS em em termos de banco de dados mesmo, né? Agora eu não sei o sistema do GitHub, que que eles que que eles fazem ali, mas é de arquivos ali é dado, né? 
+
+É, não. Sim, com certeza. Mas eh gente, não tô achando teorema CP, cadê o negócio? Mas eu não sei exatamente o que que ele como é que eles estão implementando a quando eles comitam, o que que acontece, como é que eles fazem, porque você você falou isso, mas eu não eu não sei se é exatamente o bas que eles seguem. Pera aí, gente. Eu vou chegar lá. Eu tenho que achar onde é que tá. Como vocês podem ver, eu realmente não planejei. A aula 
+
+é, ele tá na aula do S, do base. Bas 
+
+é a oito. Aula oito. 
+
+Mais 
+
+é sete, eu acho, né? Mais 
+
+mais. Eu não passei antes. Não, a sete é sobre Java, é pra frente. Sete a lâmpada, professora a da frente, aga da frente ali. Só a fila. 
+
+Oi. 
+
+Para ficar melhor chegar, senhora vai pro 
+
+Ah, tá. Eu, eu, eu só tô, eu vou ali. Pode. 
+
+Não, não, pode deixar. Eu já já faço isso, 
+
+professora. Tá depois da aula do Medu. 
+
+Ah, tá. Então, tá bom. 
+
+Antes daquela aula de programação funcional do estado, Isso aqui. Achei. Obrigada. Deixa eu. 
+
+Boa, professor. Obrigado. 
+
+Tá. Então, gente, lembra lá que além da do ácido do base, né, a gente também tem o teorema eh cap, que que ele fala que em sistemas de circuito é impossível a gente garantir de forma simultânea os três pilares que o primeiro é o C, que é consistência, né? Então, todos os nossos da rede retornam exatamente a mesma informação atualizada no mesmo instante, tá? Eh, o A fala que é a disponibilidade, então cada relão recebe uma resposta, mesmo que o dado retornado não seja a versão mais recente. E o P, que é tolerância particionamento, que o sistema continua funcionando e tolerando falhas de comunicação entre os nós da rede. De certa forma, o Cap e o BAS são bastante parecidos. né? Só que quando a gente tá falando de queda, geralmente a gente tá falando no no sentido de sistemas distribuídos em geral. Eh, e o base, ele realmente vem como uma um teorema da parte de banco de dados para encontrapartida aoet. Então, por isso essa diferença das definições, tá? Eh, mas lembra lá que tem esses três e daí que que a gente tem de problema aqui, né? Como as falhas de rede são inevitáveis, então o P é obrigatório. E daí o que que o sistema tem que escolher entre ter consistência e particionamento, porque o particionamento eu sempre vou ter que ter, ou tem que ter disponibilidade e particionamento, tá? Então você tem que escolher um dos dois. Por quê? Porque eu sempre tenho que manter a ideia de tolerância para garantir que pelo menos meu sistema continue funcionando. Eh, tolerância de eh falha de rede sempre vai ter. Não é uma coisa que exatamente o sistema distribuído vai eh controlar a falha de rede. aquilo pode acontecer, certo? Então, por isso que isso sempre ocorre, né? Então, vamos supor que a gente tenha um sistema de banco, não banco de dados, mas um sistema de banco mesmo, né? Eh, e um cliente A quer realizar uma transferência de um valor X pro cliente B e realizar uma consulta ao seu estado e nó falha justamente durante essa transação, né, que é a ideia do particionamento, da tolerância particionamento, tá beleza? Eu tô falando lá que o O meu sistema tem essa garantia de todo esse particionamento. Daí se eles for consistente, quer dizer que essa transação não vai ser comitada e o cliente ah vai ficar sem resposta sobre o seu saldo. E se o sistema for disponível, daí o cliente sim vai receber a sua resposta, mas o seu saldo vai estar incorreto, porque aquela eh porque a transação não foi comitada, não foi feito aquele que ela a a atualização do background, né? E daí aqui no base, o base é quando a gente tem os sistemas disponíveis, né? Então seriam sistemas, no caso aqui AP, certo? Então o base são, em geral sistemas AP em que eu tenho um sistema disponível, mas eventualmente ele vai ficar consistente. Já o ácido que a gente viu lá em em em transações da última prova, né, seria um sistema consistente. Então, o sistema CP, se a gente tiver um sistema distribuído acide, então ele vai ser um sistema dentro desse teorema, um sistema eh CP, tá? Então essa é a diferença dos teoremas. Então lembra aí das nomenclaturas, por favor. OK. Eh, voltando lá no Pera aí, gente do céu, tem muito slot. É o que eu digo, né? É o que eu digo, né? 
+
+Descobriu. 
+
+É. Tá. Então, com isso a gente, só revisando da última aula, né? A gente viu ali eh questões sobre a parte de decomposição de dados e tarefas, né? Então, lembra da parte que que é decomposição de dados, o que é decomposição de tarefas, né? Quais são as estruturas de algoritmo? A gente fez até aquele exercício de de dependência de tarefas, de montar o gráfico de dependência de tarefas. A dependência eu fiquei de responder 
+
+de cima para baixo. 
+
+É isso. 
+
+Eu 
+
+eu coloquei lá no nos slides, né? Então essa nota aqui, né, que a gente perguntaram, né? Então deve ser a tarefa precedente para a tarefa que consome a sua saída, né? Então, se, por exemplo, T3 consome a saída de T1, então a gente tem uma aresta de T1 para T3\. Essa é a o gráfico de dependência eh de tarefas. Então, aquela aquela resolução que a gente fez na aula passada, tá certa, tá? Eh, ah, gente, pelo tamanho de coisa, eu não vou cobrar código na prova, tá bom? Nada de compilar no papel, nem escala, nem Java. Não tá querendo código, né? 
+
+Só spark. 
+
+Ué, 
+
+não vamos pedir código de programação paralela no código. É Spark também é, mas tá só do Spark, gente, só isso daqui, tá bom? Só esse tipo de coisa. Mas aquela que nem o estala que a gente viu, aquele outro exercício de compilar o Java da Nóm qual que é a decomposição, eu não vou cobrar, tá? Vocês já estão fazendo isso no eh É no trabalho. Isso aí é escala, né? 
+
+É, isso aqui é escala. Mas aquele outro tipo lá de ver qual que é o tipo de decomposição, de qual que vem a estrutura das tarefas, qual tarefa que pode parizar, aquele tipo de algoritmo de de exercício, eu não vou cobrar, só vou cobrar disso daqui pra gente poder ver a parte de Spark Sec, tá? Que a gente viu bastante coisa. Então 
+
+o Catal também entra, né? 
+
+Oi? 
+
+O catal também entra, né? Aquela saída dele lá. 
+
+Ah, o catalist Não, exatamente da mesma forma que a saída lá. Então não vou colocar, tipo, colocando aquela saída, eu vou falar sobre os algoritmos de junção, tá? Então exercício sobre algoritmo de junção, a gente vê alguns aqui agora, tá? Eh, então passando agora pro spark, né, que é o conteúdo que ficou faltando na última aula, né? Então vamos supor lá que eu dou esse de Ah, gente, vai, ajudou um pouquinho, não deixava na prova, vai ajudou. um pouquinho. Eh, mostra por lá que eu tenho esse código aqui. Que que que que é um exercício poderia ser primeiro pra gente ver qual que seria o DAG do RDD prova, né? Então, vendo aqui as várias transformações aqui de dados, né? A gente tem aqui esse RDD prova, que é um um dos do RTD aqui, no caso, o DAG do Spark, lembra lá que o DAG Ele vai acumular todas as transformações que você tá fazendo na forma de um gráfico, certo? 
+
+Ele de baixo para cima ou de cima para baixo? 
+
+Ele é do ele ele é da mesma forma que o teste é o de dependência. Sim, tá bom? Confundir. 
+
+É, então o que que ele vai fazer, né? Então, qual seria o Dag nesse caso? A primeira coisa que eu faço ali é aplicar uma um uma transform ção de paralelização. Eu tô falando que eu vou paralelizar aqueles meus RDDs. O Spark, ao contrário do SQL, ele não vai verificar só as operações de consulta, né? Que nem no lá quando a gente vi o árvore de consulta, a gente só tava vendo em questão de joint, select, de projeção. No spark do DAG, ele vai realmente colocar todos os passos que tá passando pelo código, tá? Então acaba que aqui nesse caso, cada linha dessa vai ser uma transformação de dados que você tá aplicando sobre aquela estrutura, no caso ali, né? Então, primeiramente eu crio a estrutura de sequência, né? E daí eu tenho uma função para paralelizar aquela sequência, né? Então, criando um RDD, depois eu vou filtrar, né? Então, depois eu passo para um filter. Depois daquele filtrado lá eu vou realizar o MAP. E por fim eu realizo um virtúcio daqui. Então, vocês podem ver que o realmente ele vai buscar toda a linhagem de dados. E daí lembra por que que ele faz isso? Pra tolerância falhas, tá? Então ele mantém isso daqui lá no rador que a gente estava trabalhando com replicação de de bloco. Aqui no Spark ele tá mantendo essa linhagem de dados para se chegar aqui no MAP, tive uma falha de alguma coisa, aí eu consigo retomar até daqui para cá, eu consigo reexecutar de novo. Porque eu tenho toda a linhagem de dados é salva de alguma forma ali no spark, tá? Então, lembra como que tem essa diferença da árvore de consulta para pro DAG do Spark, tá? E lembra que o DAG ele é para eh você ter essa tolerância de fases, ter um concluito sobre essa tolerância de falhas. Outra coisa, outra segunda pergunta, então essa seria a resposta da primeira pergunta. 
+
+O Dag é esse aqui? 
+
+O Dag é esse daqui. A gente não tem que colocar o RD, 
+
+não. Eu tô pedindo aqui o RDD. Pronto. Aqui, tá? Eu vou simplificar aqui. A gente pede só as operações que estão sendo escritas, tá? Ó. 
+
+Ah, não precisava colocar assim dados. Aí o R, o filer vira o RD contrato. Não, até mesmo porque quando você lê o Spark, eh, se você vê lá no Spark Y, eh, às vezes se você não tem esse RDD cacheado em algum lugar, às vezes ele não coloca. Às vezes ele só coloca toda a linhagem de dados mesmo dessa forma. Por quê? Porque 
+
+porque ele não tá executando naquela hora, né? Então, eh, a outra o outro motivo de não ter esse dag que a gente não vai executar na hora que ele lê o código de fator. Ele tem aquele las evaluation que a gente vai executar só depois. 
+
+O ponto underline tá significando o que mesmo ali, professor? Desculpa. No argumento da errow Ah, é o é a segunda parte do do parque aqui, né? Então, a gente teria esse parque, né? Seria um chave valor, né? Aqui é ponto underline, o A seria ponto underline 1 e o 10 ali seria o ponto underline 2\. É só o os dois parezinhos ali do dos, 
+
+tá? Eh, que que é importante para montar esse dó eh, só ver qual que seria o O qual que seria o RDD aqui que eu tô que eu tô pedindo, né? Então aqui esse é o RDD prova, então ele veio de toda essa parte aqui para poder chegar na SD própria. E daí ele acumula todas as as transformações até aquele ponto. OK. 
+
+Calma. 
+
+Sim. 
+
+Onde que tá mostrando que o da lei é do próio? 
+
+Eu tô pedindo na questão. 
+
+Ah, bom. 
+
+Considere o seguinte programa. Qual seria o do RDD, RDD prova, 
+
+tá? Porque ele tá dizendo, ó, dado montado com sucesso, poderia para qualquer um e aparecer a mensagem. 
+
+Exatamente. A mensagem iria apresentar de qualquer forma, né? Então é tanto pergun é uma pergunta mesmo que vai aparecer. E daí a segunda pergunta seria em que linha este este código seria começaria a ser executado de fato? 
+
+E aí eu não sei se é a seis ou a sete. Sete, talvez 
+
+é cinco. 
+
+Aí eu colocaria sete, 
+
+é a seis. Tá? Por quê? Eh, esse 
+
+colete, 
+
+é, eu vou explicar isso aqui. Esse esse método aqui, ponto collet, ele é um método que ele vai puxar os dados de todas as partições que eu tenho no meu spark e colocar tudo pro meu mestre, tudo pro meu driver, tá? Então, quando você e executa um colete, quer dizer que eu vou começar a puxar esses dados e daí ele começa executar aqui. Tá, não vou comprar ponto colete na prova, gente. Tô colocando justamente pra gente discutir isso, tá? Aí ele executa e tá armazenando vai armazenar o resultado e daí o o resultado que só vai fazer. 
+
+Quebra o laser, o colete. 
+
+Ele vai quebrar o laser. Ele vai ele vai fazer, ele é um trigger. Vocês queram um trigger? Acho que não. Calma. Vai. 
+
+É, ele é um pontapé falando assim: "Lê essa lia essa execução aqui agora. Vou começar a exec Tá tudo. 
+
+Tá bom. 
+
+Tá. 
+
+Pode não. Pode cobrar esse. 
+
+Pode cobrar esse. 
+
+Esse é uma boa para cobrar. 
+
+É, 
+
+vou pensar. 
+
+Então, aqui na parte do RDD, né? Lembra que lá no Spark a gente tem a a P de RDD, mas a gente também tem a P de data frame, que é quando a gente começou a ver o Sparkle, eh, lá no caso, tá? E aqui a diferença entre os dois. A diferença principal é primeiro o data frame, ele é mais fácil de vocês lerem. Ele foi eh colocado no spark de uma para que ele seja similar ao que o pessoal já utiliza em pandas, por exemplo, né? Então é uma questão de usabilidade mesmo. E a outra questão é que como ele foi inserido no Spark CCLE, agora a gente tem o otimizador dessas relações. O RDD lá ele é o mais baixo nível que a gente vai ver, que a gente viu dessa dessas dessas APIs, né? A data frame não, você vai escrever de uma forma bem parecida que vocês estão acostumados lá no Pandas, eh, só que em escala no caso, mas tem para faz parte também. Eh, e daí ele vai mandar pro catalist otimizar a consulta, OK? Então, essa é a diferença entre os dois. Então, aqui vou ver do Spark Stickle. Eh, observe o seguinte programa Spark Stickle com Qual seria uma representação desta consulta em álgebra relacionada? Vamos fazer, vamos fazer junto. 
+
+Vamos. 
+
+Primeiro, que que eu tenho de relação? Pedidos. OK. Venha lá. Pedidos. 
+
+Só nós vamos de baixo para cima. 
+
+Não, eu quero a consulta em para relacionar, não a árvore. montar árvore. Nem lembrava que existia árvore, né? Tá. Vamos montar a árvore também por causa que o próximo exercício é para montar a árvore. Então vamos montar a árvore então. Tá? Então v montar a árvore. Pede vou colocar é apresentação. Eu não sei se fazer árvore. 
+
+Aí depois vocês fazem árvore, vocês fazem apresentação. Então vamos fazer dois. 
+
+Vai lá pedidos. Aí a gente faz uma seleção. O valor 100, 
+
+não é? É da forma que você lê fil 
+
+primeiro fazer. 
+
+Primeiro ele vai fazer o filter. 
+
+Então o filtro não é na seleção. 
+
+Isso na seleção. Ah, tá. 
+
+É que eu vi o selete ali. É tem o 
+
+selete. É uma projeção. 
+
+Isso mesmo. Então aqui eu tenho uma seleção. Que que eu tenho aqui? 
+
+Valor maior. Valor maior que sempre. 
+
+Maior que 100\. 
+
+Aí nós temos uma outra relação. Agora a gente tem Outra relação ali, clientes, fazer uma junção. 
+
+A gente vai fazer uma junção. Fizemos uma junção aqui. Qual o atributo de junção? E, 
+
+né? Então aqui eu vou colocar aqui igual a é a minha condição de junção. Por último, 
+
+a gente faz a projeção. 
+
+A gente faz a projeção. 
+
+Nome, cliente, cliente, nome pedido, valor. 
+
+Nome valor. 
+
+Então essa é minha árvore. Certo? Como é que a gente escreve a consulta daqui agora? Aí o pessoal falou: "Ai, meu Deus do céu." Ó, gente, tô apertando na seleção. sobre pedidos, certo? Então, primeiro começo aqui. Eu vou fazer aqui valor maior que 100 e aqui sobre relação pedidos. Primeira coisa que eu vou fazer, parênteses. Agora eu vou fazer uma junção com clientes. Então, escrevo aqui junção sendo aqui igual a ID corrente, certo? Não precisa de parênteses. Fiz a junção. A gente põe mais um parênteses aqui. Por último, 
+
+projeção. 
+
+Projeção. Então, nome valor 
+
+não tem que colocar de onde vem 
+
+não. E se tiver dois cros iguais, 
+
+daí você tem na ágebra relacionar, você tem que utilizar um operador chamado renomeação porque você não pode ter campos iguais na representação de relacionar. Mas eu não passei para vocês porque como vocês não tiveram em banco, ia ficar muita muita coisa. 
+
+Se já não fosse muita coisa. 
+
+Se já não fosse muita coisa. Tá. Então gente, deu pr entender que como da árvore dá pr montar a consulta? né? Só montar lá, só até pelo código, né? Que que eu tô fazendo primeiro? Tô fazendo uma seleção sobre pedido. Então, tá aqui. Depois eu faço a junção, depois faço a projeção, né? Então, só tô fazendo meio que ao contrário. Então, essa aqui é representação em álgebra relacional, essa aqui é representação em árvore de consulta, tá? Eu coloquei lá nos slides ao contrário, tá? Por isso que eu coloquei aqui no no no enunciado, qual seria uma representação em álgebra relacional? Por quê? Você pode trocar isso daqui para uma um plano cartesiano com uma seleção. Depois você pode trocar a ordem das relações aqui também. Elas continuam sendo a mesma consulta. Então, qual que seria uma representação, né? Então, por exemplo, o Ah, eu tô vendo aqui que eu coloquei na projeção os os nomes, mas geralmente a gente não coloca. É, aqui seria isso daqui, né? Poderia inverter os dois, no caso, né? Aqui, colocar essa esse lado para cá e esse aqui para cá, porque lembra lá que a gente tem a junção, tem comutatividade, então fazer pedido junção com clientes ou clientes junção como pedidos é a mesma coisa, tá? Então, uma representação qualquer uma. OK. Estou vendo vários pontos de interrogação na minha. Não, mas essa aqui até diferente porque essa aqui tá filtrando depois, só depois da junção. 
+
+Não, mas você chama chama 
+
+é tô 
+
+mas é não é eh mas aqui gente se eu ficar antes ou depois da junção é a mesma coisa. Como assim? Se você filtrar e eliminar metade dos registros. 
+
+Não, mas daí a gente tá falando de otimização de consulta, mas em termos da consulta escrita, o seu resultado final vai ser o mesmo. Por isso que é uma representação, entendeu? Que a ordem aqui, no caso, só para respond para falar sobre a álgebra relacional, não vai não vai afetar, tá? 
+
+Não tá contando os estados intermediários, tá contando final? 
+
+Não, eu não tô falando nem para vocês otimizarem nada, verificarem. Eu só quero qualquer representação ali. OK. Eh, tá. Agora mudando, né? Agora a gente vai utilizar o mesmo aqui, mas mudando um pouco o exercício, né? Então, considere a seguinte consulta em prelacional, desenhe a árvore de consulta. Fizemos já, né? Na verdade, eu coloquei aqui a seleção para cá. Deixa eu só mudar isso pra gente poder fazer o ex Tá aqui. Na verdade eu fiz um aqui e aí eu fiz uma aceleração aqui com 100 e aqui é igual a L. clientes, né? OK. Quais heurídicas de otimização de consulta a gente poderia aplicar? E por quê? 
+
+Como que é o nome daquela que fizeram seleção para baixo? 
+
+Select custal. Select custal. Essa é uma dela. 
+
+É. É. É, é exatamente o que comentava antes, né? A gente pode fazer um pushd aqui. 
+
+Qual que é o porquê? 
+
+Oi? 
+
+E o porquê? 
+
+Por quê? Qual que seria o porquê? Porque se eu 
+
+v reduzir, 
+
+porque eu vou reduzir e porque se eu puder fazer eh eu posso fazer esse cogital porque eu vou ter uma consulta equivalente. Então o resultado da minha consulta vai continuar o mesmo, né? Que é toda a ideia da da jurídica baseada em reg porque selecionando. Então essa é uma parte e a segunda parte da da porque ele vai reduzir. Como você explicar isso? Se eu faço essa seleção antes, eu tenho grande eh probabilidade que eu vou reduzir o número de tupas para uma alteração mais custosa, que é a junção. 
+
+Ah, um outro porquê também é porque o atributo do filtro ele pertence a uma relação aí. Exatamente. Então, o atributo do filtro também eh ele tá aqui só em um do duas relações. Então isso possibilita que eu posso fazer esse pushd. Se eu tivesse mais uma condição, vamos colocar aqui cliente aqui, vamos supor aqui que seria e nome igual a João, sendo que o nome é do cliente. A gente poderia fazer o quê? Dá para fazer a separação deles primeiro. 3 2 
+
+Isso. Exatamente. Então, primeiro o que que a gente faz aqui? A gente vai dividir isso daqui em duas seleções, né? Então, valor maior que 100 e a outra seleção aqui com nome igual a João. E daí eu posso colocar agora esse nome que é o João aqui, né? Então aqui fica nome igual a João. aqui valor maior do que tem e aqui agora eu não tenho mais esse selete. Certo? Então essa seria a otimização que eu poderia fazer caso João fosse caso o nome fosse chave primária. 
+
+Oi 
+
+uma só chave uma direção. 
+
+Isso. Exato. amente daí você tem mais razão ainda para fazer esse celular de pushdal, porque aqui com certeza agora vai vou retornar aqui só uma linha, certo? Então agora eu joguei basicamente toda a minha relação fora. Agora só deixei uma linha lá que é João. Então tá. Então essas esse tipo de otimização, tá? Tá pessoal? né? Então aqui só mostrando ali que a gente poderia jogar para baixo. Eh, otimização de consulta. Então, algumas questões relacionadas a algoritmos de junção que a gente viu. Então, vamos revisar o que que eram os algoritmos de junção que a gente viu. Primeiro, a gente viu nesses loops, né, que são os loops alinhados, que basicamente é fazer um for dentro de outro for, certo? Se Vocês lembram, né, que é o mais básico possível. Segundo é o hash join, que a gente faz a tabela hash de uma das relações, geralmente a menor, sendo que a chave da tabela hash, né, a função sobre a R vai ser sobre a chave de junção. E daí a gente e daí a gente utiliza a mesma função na outra chave de junção da outra tabela e tenta verificar como é que funciona, como é que a gente mapeia os dois. Então, hash Joy, a gente trabalha com uma tabela em memória em memória, que é a tabela hash. E por último, o short merge joint, que a gente tem o custo de ordenar cada uma das junções de acordo com a com a chave de junção e daí a gente vai movendo os ponteiros para verificar se as chaves são iguais, tá? Que que tem que lembrar dessa parte primeiro, Hash join. Eu preciso ter espaço na memória para realizar, para poder construir a minha tabela RH. Sort join tem o custo adicional de ordenação, tá? Então esses são os dois pontos principais desses dois algoritmos. Agora vamos pensar eh aqui tá aqui o o exercício completo, né? Então vamos lá. Considere esse relações e o plano físico a ser executado. O algoritmo de junção proposto seria o algoritmo mais adequado nesse caso? Justifí se sua resposta for não sugir a qual o melhor algoritmo a ser executado, tá? Então, primeiro lado, eu tenho uma relação de vendas, né? Eh, que tem 500 milhões de tuplas, que é básica que eu tenho basicamente 40 GB distribuindo aleatoriamente em 320 partições pelos workers do club. Ah, deixa eu voltar um pouco e falar de novo do dos algoritmos de junção do Spark, né? Porque a gente, eu falei do do Hash Join, do e do shortm Joy, mas eu não falei do Spark. Esse daqui vai falar do Spark. Como é que a gente transfere agora essa ideia dos algoritmos pro Spark, né? Então, primeiro a gente tem o broadcast join no Spark. Esse broadcast join no Spark, ele vai verificar se tem uma das tabelas que é pequeno o suficiente para poder enviar uma uma cópia a todas as minhas partições, a todos os meus nós. No caso, se ela for pequena ou suficiente, eu posso enviar essa cópia e daí a junção vai ocorrer em cada um desses nós de forma local. Eu não preciso movimentar dados além da cópia dessa tabela. Isso é considerando uma tabela pequena. O espar, o padrão é ela ter 10 m, então bem pequena de memória, né? Não é muito pequena em termos de dados. A a e daí no broadcast joint, uma das implementações é fazer o broadcast hashooin, que eu faço o broadcast dessa tabela e localmente eu executo um hash join, tá? Eh, esse broadcast Hin, qual que é a qual que é a parte, a vantagem de um algoritmo de broadcast H join é que eu não tenho movimentação de dados de shuffle entre as partições, que é geralmente a parte custosa. Eu tenho sim a movimentação para cópia, mas isso é bem menos custoso, principalmente para ela ser pequeno suficiente do que fazer o shampo, tá? Então essa é a vantagem. Desvantagem tem que ser uma das tabelas tem que ser pequena, né? Então fica limitado um pouco o quanto que você consegue utilizar eh esse algoritmo em larga escado. Agora pensando nos outros joys. Daí a gente tem o shuffled hash Joy e a gente tem o shuffled sortin. A pessoa ai meu Deus, gente, tem o chãoo na frente, já tá falando, vai acontecendo uma movimentação de dados e daí existas, quando as tabelas são muito grandes, que elas não que eu não consigo fazer aquele esquema de broadcast de cópia, né? Então, Quando eu tenho tabelas muito grandes, que não tem nenhuma, que eu consigo realizar a cópia através do broadcast, daí vai escolher ou shuffle hashjoy shuffle sort. Shuffles hash join. A gente tem, lembrando de novo, a gente tem que ter espaço na memória para construir a tabela H. E daí agora com esse shuffold, eu vou construir a tabela R em cada uma das partições. Então todas as minhas partições vão ter ter essa memória suficiente para para construir essa tabela hash. Esse é um custo a mais. Sham sort joy. Não preciso de fazer essa tabela hash, mas eu preciso ordenar as minhas chaves dentro de cada uma das partições, tá? Que é um custa mais o short de joy. Gente, quando você tem já muitas vezes no Spark, quando você usa um grupo B umus e alguma coisa assim, você já sabe quais chaves estão agrupadas e daí dá para fazer um esquema de ordenação um pouquinho melhor. Então, esses são casos assim que ele acaba escolhendo um um sort de join, por exemplo, tá? E também por questão do da memória mesmo, porque eh memória é uma coisa preciosa quando a gente tá trabalhando com esse tipo de arquitetura. Então, essas são os tipos de junção. Então, Só lembrar de loops #join sortm joy membros três. Daí agora a gente vai lembrar agora no spark eu tenho broadcast ou do hash join. Tem o Ness Loops também, mas eu não vou falar do N Loops porque é muito nunca vi acontecer sinceramente. Eh, e daí depois tem o Shuffled Hooyin e o shortm Join é shuffle short merch. É bastante coisa. Eu sei. Disse para começar a fazer o exercício. para começar a fazer o exercício para vocês lembrarem tipo de junção, né? Então tá. Agora pensando aqui, eu tenho uma relação vendas, eu tenho 500 milhões de turmas e eu tenho 40 GB. Daí eu tenho uma relação lojas que tem 50 turpas e dois eh KB ali. O plano físico proposto pelo otimizador, ele vai falar que ele quer executar a junção utilizando o algoritmo shuffle sortin. Redistribuindo todas as tabelas pela rede, achando com base no rest de ID e ordenando logo as partições antes de mestar. Redistribui 40 GB. 
+
+Exatamente. É isso que ele quer fazer. É o mais indicado. 
+
+Não, 
+
+não. Certo. Por quê? 
+
+Tem uma pequenininha abaixo de 10 m que dá para fazer o broadcast. 
+
+Exatamente. Então aqui eu tenho uma relação lojas aqui que é extremamente pequena. Então eu posso replicar ela, eu posso mandar uma cópia dela, né? Então a resposta seria o algoritmo de junção proposto não é o mais adequado, pois como existe uma tabela pequena de aproximadamente 2 para B, essa pode ser através de um broadcast e por consequência não realizar um processo de shuffle que costuma ser mais custoso eh que o broadcast, principalmente para dados pequenos, tá? Então daí no caso a gente realizaria isso a partir o e o o algoritmo de junção adequado, seria um brc Join, tanto um broadcast Join quanto broadcast e n, mas pode colocar só broadcast join nesse caso. 
+
+Eh, 
+
+não dá para fazer só o shavou dela? 
+
+Oi. 
+
+Não dá para fazer o chavô só dessa tabela? 
+
+Mandar só essa tabela para todo mundo sem fazer o resto dela. 
+
+O qu do do L? É, mas é isso mesmo que o podcast faz. 
+
+Mas ele manda o teste dela, não é? 
+
+Não, ela não, ela manda realmente ela inteira para todo mundo. 
+
+E aí acontece o rest, 
+
+o rest acontece 
+
+é na fase de shampoo, 
+
+tá? Então tem dois tipos de, tem o hash partitioning, vocês lembram que eu falei do hash partition na aula? É o hash não precisa lembrar dessa parte da prova, tá bom? Mas só para para falar no shuffle aqui, que que ele vai ter que fazer? Ele vai ter que reparticionar os dados para mandar eh a chaves para cada uma das partições que ele vai realizar o join. E aqui tem o método de você particionar esses dados e fazer essa movimentação de novo, que é um hash partío, ele sim vai executar uma tabela hash ali para executar esse particle que ele vai realizar isso. 
+
+Então, mas no broadcast, qual é o nome do mesmo? É broadcast 
+
+join. Broadcast broadcast hashoo. 
+
+Broadcast joy tá. 
+
+Onde é o hash? 
+
+Onde é o hash? Dentro de cada uma das partições, tá? Então, dentro de cada uma das partições, daí ele vai criar uma Ela reste sobre as chaves de junção dessas 50 fontos, 
+
+tá? Que foi inteira, 
+
+que foi inteira. E daí cada uma das partições vai tentar juntar com aquela com essa menorzinha e depois ele só dá um dá uma agrupada. É, agrupada não é uma boa palavra, ele junta todo mundo. 
+
+Juntar também não é muito boa palavra. Falando de juntão, né? Eh, vai colar uma todo mundo ali na outra ali. É com catena. É isso. É uma palavra melhor, 
+
+né? 
+
+Ótimo. 
+
+Ótimo. Então, gente, isso era o que tinha faltado. 
+
+Só isso 
+
+do É, 
+
+não tinha mais. 
+
+Não tinha mais. O que que tem depois é que eu deixei a lista de exercício. Ali, vocês chegaram a ver 
+
+a lista veio quando? 
+
+Segunda. 
+
+Segunda. 
+
+Não, professor, nem vi. 
+
+Vocês querem, tem alguém que tá com alguma dúvida aqui na lista? Quer falar alguma coisa? Vamos fazer 
+
+quantos exercícios tem? 
+
+Acho que deixa eu ver o exercício 
+
+eu não vi só vi por cima cheg 
+
+melhor. Professor qual um exercício que o seu coração quer mostrar um exercício que o meu coração quer? 
+
+Ó, questão número um da prova 
+
+só só para quem veio hoje. Boaão. Exercício 
+
+e para quem veio tá prestando atenção. Deixa eu pensar aqui. 
+
+Tô, vou pegar aqui algum exercício que a gente não fez ainda, né? Porque, por exemplo, esse daqui a gente já tinha feito um, né? Tá? Eh, que a gente acabou de fazer, vamos fazer isso aqui que é um pouquinho mais difícil de árvore de de de árvore. Pensando nessas daqui 
+
+de novo. 
+
+Essa senhora não cai aqui uma questão dessa chora. Tem verde vai. 
+
+Tem um azulzinho vermelho. 
+
+Ó o louco, gente. Quase não. 
+
+Vocês não chegaram nem caso um relacionou de tempo. 
+
+Azul ou vermelho? Fica mais fácil. Vermelho. Vermelho. Não. Vermelho não. 
+
+Não, vermelho sim. Ou azul. 
+
+Vamos ver se tá funcionando. Tá melhor mesmo 
+
+agora. Táado. 
+
+Tá. 
+
+Eh, até eu tenho que ler aqui. 
+
+Vamos embora. 
+
+OK, gente. Então, aqui, data a seguinte, a expressão em prelacional. Desenhe qual seria a árvore de consulta inicial equivalente a essa consulta. Tá, então vamos fazer junto. Fala com certezian lá embaixo. 
+
+Oi. Isso. Exatamente. Então o que que eu tenho de relação aqui? Tem um aluno. 
+
+Matrícula 
+
+matrícula. E eu tenho que que a gente faz primeiro pela ordem das parênteses ali. aluno e matrícula. 
+
+Isso. Então aqui cartesiano de aluno com matrícula depois cartesiano do resultado disso com disciplina. 
+
+Certo. 
+
+Certo. 
+
+É associativo, né? 
+
+O quê? 
+
+O cartesiano. 
+
+Ah, é. Ele ele a gente poderia 
+
+a gente poderia mudar. É que a Ele tá como parênteses, né? 
+
+Então 
+
+é que o resultado final, né? 
+
+Oi? 
+
+É porque o resultado final isso. É. Eh, então, gente, ó, quando eu peço assim, qual seria a a aula de consulta inicial, presta atenção nos parênteses, tá? 
+
+Que nem, por exemplo, aqui, né? A gente poderia fazer matrícula quando cartesiano com disciplina e daí aluno plano cartesiano com resultado disso. Mas como ali na consulta tá escrito que primeiro é executado matrícula e aluno e depois faz isso com disciplina, daí o o correto seria fazer essa representação. Então, toma cuidado com com os parênteses ali. OK? Eh, depois disso, que que a gente faz? Que que tem lá no cantinho? 
+
+Uma seleção. 
+
+Ah, 
+
+a seleção Ela não é select, né? Ela é filter ou né? 
+
+Isso. 
+
+Select é o né? 
+
+Isso. Daqui eu faço uma seleção aqui de 
+
+curso igual comunicação. 
+
+É 
+
+ano volta de 26 aluno. 
+
+Vou colocar três pontinhos aqui 
+
+na prova. Pode colocar três pontinhos. 
+
+Não, não pode. Não pode. 
+
+Tem vários aí. Eu amo. Vai colocar tudo nos três pontinhos já. Tá aí. Três pontinhos. Tá, tá, tá, tá. Só para copiar aqui, tá gente? Mas é tudo aquilo lá, 
+
+tá? 
+
+Tudo esse esse negócio aqui inteiro aqui seria aqui, tá? E por último, a projeção, certo? Daí aqui eu aqui eu vou copiar Fácil. OK. Beleza. Essa é a minha árvore de consulta inicial. Então, a mesma coisa que a gente fez ali, tá? Agora aqui, vamos ver. Identifique duas otimizações baseadas em regras que podem ser aplicadas. Neste caso, que que a gente pode fazer? Bom, 
+
+eu tô pedindo duas só. A gente pode fazer muita coisa, mas tô pedindo duas só. A gente pode separar os selects, os do select fazer um push down. 
+
+Talvez dê para fazer um join também, né? Que não tem cão. 
+
+Então ali o select ali. Eu vou agora, agora vou ter que copiar. 
+
+Agora eu vou ter que confiar. 
+
+Não tem como evitar isso, mas eu vou ter que confiar. Então aqui agora Select aqui nesse momento. Gente, eu vou ter que fazer uma árvore meio torta aqui porque são de espaço, viu? Essa essa dispensa ainda bem que existirá para fazer imagem esses esses anos, porque meu Deus. Eh, então o que que eu vou fazer aqui primeiro, né? Curso igual a computação. Daí que eu tenho outro celest que é ano igual a 2026\. Outro selete. Outro outra seleção. Select não, seleção. Eh, aluno pon ra igual a matrícula pon ra. 
+
+Matrícula de disfruto. 
+
+Isso. 5949494 a ordem porta aí, professora. 
+
+Não, 
+
+essa tá bonita. 
+
+É, tá, tá meio ficou bem torto aqui, gente. Mas essa aqui é que fiz uma pequena Tá mais um braço de uma árvore aqui, tá? Então, o que que a gente pode fazer aqui agora que a gente tem isso daqui agora? O que que a gente pode fazer? 
+
+Isso que a gente fez tem nome? 
+
+Tem cascata de seleção. 
+
+Cascata de seleção. Já pode contar como uma operação. Então 
+
+pode 
+
+a outra então fazer o pão. 
+
+É, 
+
+fazer o pãoar pras. E aí daria duas para 
+
+Não, a A cascata de seleção, ela é uma equivalência, é, é um tipo de equivalência da álgebra relacional. A, o tipo de otimização de fato é o selectinal, por causa que a cascada de seleção a gente só tá fazendo, a gente não utilizou nada aqui. Isso daqui se a gente executar vai executar exatamente da mesma forma, só quando a gente realmente fazer o pushd dela que a gente vai começar a ver resultado em termos de otimização, tá? 
+
+Então vamos jogar. 
+
+Então, select push down. Só 
+
+vamos jogar O curso computação vai pro lado 
+
+curso igual computação para cá aqui. Curso computação. Isso. 
+
+Vamos ver se ela a 
+
+Esse ano tá vindo de onde aí? É o quê? O segundo. 
+
+O ano tá vindo aqui? 
+
+O ano tá vindo de matrícula. Então a gente pode agora jogar esse ano para cá. 
+
+Ah, é verdade. O curso é um verdadeiro. 
+
+É, eu vou colocar ali e aqui sim. Bão computação. 
+
+Aí já reduziu bastante para fazer o cartesian. Então agora aqui a gente já não tem mais esses dois. 
+
+Isso. 
+
+Esses dois aqui. Então agora tá isso. Aqui 
+
+certo? 
+
+Sim. 
+
+A gente pode fazer mais algum postal? 
+
+O que que é o outro lá? 
+
+É aluno. Aa igual matrícula. E matrícula codisk igual disciplina codisk. Tá lá as as chaves. Pode jogar ali em cima do Pode do unimatrícula. Isso 
+
+pode. Então a gente faz isso daqui. Ao é igual a matrícula ponto ra. OK. 
+
+Se a gente quisesse fazer também e ao invés de fazer aluno matrícula primeiro, a gente podia fazer uma trícula de segunda e depois aluno e jogar aquela outra seleção para baixo. 
+
+Pera aí de novo. Vamos lá. Passo a passo que você me falou. Você queria fazer primeiro matrícola com disciplina? 
+
+É, os produtos cartesianos. 
+
+Aham. 
+
+E depois com aluno, o resultado com aluno. 
+
+O resultado com aluno. Tá. 
+
+E daí, ao invés de jogar aquela seleção que o falou para baixo, a gente poderia jogar para outro lá em cima. Matriz pode 
+
+poderiaar ela. 
+
+Uhum. 
+
+Então você poderia, 
+
+então Então poderia assim, poderia mudar isso daí também. A pergunta é: otimizaria alguma coisa? Tamanho da tabela. 
+
+É, então o que que a gente pode aqui? Eu não dei o tamanho do 
+
+Mas partir daquela relação primária que você colocou para respeitar os parênteses. 
+
+Sim, mas assim, por exemplo, aquela o que o Vitor tá propondo aqui é é equivalente. Então assim, seria uma um uma otimização proposta também, porque você pode trocar a ordem disso daqui que eu vou te Outro tipo de otimização é a gente conseguir trocar a ordem de forma que a gente coloque as relações intermediárias sejam menores, certo? Então, se, por exemplo, ele justificar lá para mim que trocando a ordem aqui dos planos cartesianos, isso daí daria uma otimização, eh, seria uma otimização válida. Como é que a gente verifica isso? Daí a gente tem que verificar o quanto de tuplas a gente conseguiria eh, de fato minimizar. Aqui eu não dei o número de tuplas, eu dei a relação inteira. A única informação que a gente tem aqui é da chave primária, certo? E daí a gente sabe que a chave primária, o ID vai ter um de cada. Daí a gente tem que analisar. Então vou pensar aqui se isso valeria a pena. O aluno RA ali, bom, ele tá fazendo uma seleção aqui de curso computação ano igual 2020\. Seis a gente não sabeir bastante. 
+
+É, pode. Agora aqui aluno R e matrícula RA. Eu sei que esses dois aqui são chave, então vai ser de um para um. Então o máximo aqui de tamanho delas vai ser o tamanho desse vezes esse, certo? Não, calma. 
+
+Menor de um. 
+
+Isso. Exatamente. Eh, agora aqui a disciplina lá códig disc e a matrícula tá falando que a outra chave dela também é código disc. Então, nesse caso, como eu não sei exatamente o tamanho, poderia sim que fazendo elas eh daria uma otimização por causa que essa é algumas duas é chave primária, eu não consigo afirmar de fato, certo? Mas assim, parece meio que equivalente porque eu tô fazendo chave primária com chave primária, chave primária com chave primária, então vai depender do tamanho delas no final, tá? Mas Se tivesse o tamanho lá certinho e a gente conseguisse prever o número de tuplas, por exemplo, daí seria uma otimização válida, tá? Eh, OK. 
+
+Vamos fazer o join. 
+
+Vamos fazer o join. Que que a gente faz agora? Então, tá. Então, uma otimização aqui, select push down. A gente já fez outra otimização agora que a gente pode fazer, que que a gente faz? o J. 
+
+Então agora a gente viu que aqui esse plano cartesiano tá seguido de uma seleção sobre duas atributos de das duas tabelas, né, das duas da dos dois dent frames no caso aqui do do do Spar, se a gente for pensar. Então a gente pode agora trocar tudo isso daqui por um joint, né? Então a gente agora faz isso daqui. de aluno rag matrícula ponto ra. E daí isso daqui agora tá aqui. Consigo trocar esse daqui também por um joia? 
+
+Acho que consegue. Consegue ali um cartesiano. 
+
+Sim. Então é um cartesiano seguido de uma seleção. É o mesmo esquema daqui, né? Então aqui a gente também Troca. 
+
+Tá bonito isso aí. 
+
+Tá bonito, né? Também trabalhar com grato não é minha praia. 
+
+Não, 
+
+eh, 
+
+sigma aí não. Tem aqui embaixo. Colocar aqui. E aqui é o cot disc, né? É o matrícula cot discina pode Então, tá aí as minhas duas otimizações. Fazer o selectal e trocar o plano cartesiano e seguido por uma seleção, por um join. Consigo fazer mais alguma coisa? 
+
+Você quer fazer mais? Tá bom. 
+
+Não, tô perguntando. A gente consegue fazer mais alguma coisa? 
+
+Consegue? 
+
+Que que a gente consegue fazer? 
+
+Ó, você vê ali, você vai Usar só projeção. Usar que que é aquela projeção? É nome, 
+
+nome, nome diz que nome 
+
+é pode puxar isso para baixo. 
+
+Posso puxar isso daqui para baixo? 
+
+Nome é se não for utilizado em nenhuma das chaves, a gente 
+
+ó projeção anterior. 
+
+Tô aqui agora. Agora vamos tentar fazer esse projection push down, né? Projeção. Agora aqui no aluno, que que é o uso de uso? Oi. 
+
+Créditos, por exemplo, da disciplina não vai usar 
+
+créditos. OK. Tá, vamos relação por relação para eu não me perder. Então, tá aqui, aluno, o que que a gente usa no aluno? A gente utiliza curso, 
+
+a gente utilizar o RA e a gente utiliza o nó. 
+
+Então eu não posso tirar nada daqui. Então aqui eu não posso fazer nada de projection aqui, porque todos eu vou ter que utilizar depois, né? Matrícula. matrícula lá, eu uso nota ali, eu uso o ano e eu uso tanto o RA quanto o qu disc aqui. Então, usei todos os atributos também, não consigo filtrar nada, não consigo selecionar nada, é projetar data é difícil, né, que nos SP. Eh, então não consigo mexer aqui também. Disciplina. Que que é o uso da disciplina? O C dis 
+
+o nome E é isso. 
+
+Então, o que que eu poderia fazer aqui agora? 
+
+Faz um projét aí. 
+
+Eu posso agora então fazer aqui antes de começar a junção, que é mais custoso colocar uma projeção aqui de cod e 
+
+e nome discó. eu tô utilizando e daí eu tiro créditos. Então aqui no final, gente, eu pedi duas, mas a gente tem três tipos de otimizações. A gente fez o selection postal, a gente trocou os os produtos cartesianos por junções e a gente poderia fazer um projection pushd aqui na disciplina também. Então duas dessas três opções seriam respostas válidas nesse caso. Tá 
+
+tranquilo, 
+
+professor? Quem quem disse que otimizou aí? Dá para saber é uma, 
+
+tá? Eh, então a gente aqui eu passei para vocês só a parte de otimização baseada em regra, 
+
+tá, 
+
+né? Então assim, quando a gente faz otimização baseada em regra, são regras heurísticas que geralmente vão funcionar. No banco, como é que é implementado? Ele utiliza tanto as heurísticas quanto utilização baseada em custo. Daí sabe toda aquela história de, ah, vamos contar quantas tupas provavelmente eu vou ter se eu realizar essa junção. que se eu fazer essa seleção, quantas túas, estimar quantas túclas eu vou ter, esse daí entra na parte de de otimização baseada em custo, que daí sim, com essa estimativa, você consegue eh calcular de fato qual que é aquela otimização. Então, rapaziada, em regras vai ser só assim, ó. Geralmente isso daqui funciona. E realmente, gente, será que um pushd tá uma beleza, funciona muito. É mesmo. uma beleza. Então, realmente isso daqui geralmente funciona. Eh, mas a otimização baseada em custo, ela é muito mais complexa e a gente precisaria de muito mais tempo pra gente entrar um pouco mais nele. A gente teria que ver estatística de banco, como é que vê distribuição de dados, como é que calcula o tanto de duplas. De fato, é bem é bem legal. Mas aí vocês sozinha matéria no mestrado. Tá na projeto aí, 
+
+tá gente? Então, ah, cadê meu cursor? Então, esse daqui é o que ficou faltando, tá gente? Aqui Eh, tem mais um exemplo daquele segundo exercício sobre os algoritmos de junção, tá? Aí, professora, tá bem, 
+
+tá bem bem extenso, né? Tá, vamos falar aqui que é uma situação um pouquinho diferente ali. Eh, a situação que eu passei no slide é quando a gente pode posso apagar. Então, vamos lá. Exercício nove. Considere a seguinte ações e o plano físico a ser executado. O algoritmo de injunção proposto seria o algoritmo mais adequado nesse caso? Justifica a sua resposta se for não e sugira qual o melhor algoritmo a ser executado. Então vamos lá. Eh, considere as seguintes informações sobre as duas relações armazenadas em um ambiente de circuito como de lei ou um bom paralelo. Outra memória disponível por nó executor para tabela é limitada 512\. Então eu tenho o limite de memória para para construir aquela tabela R ali. Esse aqui no final a gente não vai usar, tá? Só para assustar. 
+
+Eh, vamos falar lá questão da lista 
+
+relação transações. 
+
+Lista. 
+
+Mas gente, a lista, a lista não é mais difícil do que a prova? 
+
+Negativo. 
+
+Contrário. 
+
+Vocês não acharam a prova fácil? Vocês foram bem? A lista é mais difícil do que a relação transações, 400 milhões de tupas, né? Total de 45 GB, armazenada fisicamente particionada e pré-ordenada pelo atributo de conta. Daí aqui você já vê, já vê o que que vai vir já. Relação conta 60 milhões de tubos, também armazenada fisicamente particionada e preordenada pelo atributo de conta também. Então eu já tenho duas tabelas ali que eu já tô falando para vocês, ó. Elas já estão pré-ordenadas por uma Eh, sorte. 
+
+Isso. Então, para realizar a junção entre a relação transações e conta sobre o atributo e deco, o plano físico inicial proposto apresenta a escolha pelo algoritmo Sheff hash Joy. O algoritmo de junção proposto seria, qual algoritmo de junção proposto seria mais adequado nesse caso, né? Então aqui, gente, eu tenho um tamanho de memória. Se eu tenho lá 45 GB, 8 GB, Se eu for pegar só a chave, que é o que eu preciso para fazer a tabela RH, muito provavelmente eu não vou precisar só de 500 m, 512 m, muito provavelmente. Certo? Então eu não consigo fazer uma tabela R ali em memória, porque esse daqui é o meu limite. Agora eu tô falando para vocês que já ali já tá falando que eu tô tenho as minhas duas relações pré-ordenadas. Se elas estão pré-ordenadas, O custo daquele sorte merge join que a gente viu, a gente não tem o custo do sorte, a gente só tem o custo de fazer o merge nos dois. Daí ali o meu o meu custo caiu bastante porque ali aquela parte é complicada, certo? Então chama o Sort Joy, né? Ou Sort Joy, né? É o algoritmo mais adequado para este cenário, pois lida de forma escalável com duas relações grandes, né? Sem exigir que uma delas ca integralmente na memória para cons de uma tabela RH. Além disso, como as tabelas já estão pré-ordenadas pelo atributo de junção, o curso de ordenação é eliminado, né, permitindo realizar a junção por meio de uma simples varredura eh sequencial, né, que é a fase merge do algoritmo, tá? Então assim, que que é o pulo do gato aqui? É o fato da gente já ter uma pré-ordenação do do atributo ali. E se a gente pensar em termos de custo, né, lembra lá que tinha lá tabelinha do o que que era o custo lá no slide. Eh, eu não preciso fazer tabela RH, eu não preciso ordenar, então eu só preciso realmente casar as duas tabelas. Então, se ordenado, se não tivesse ordenado, 
+
+se não tivesse ordenado, daí provavelmente eu taria muito mais informações sobre como construir essa tabela R só no mestrado. 
+
+É, muito mais informações de como você construir, mas ainda assim eu cha a sorte Joy seria mais adequado. Tem que ser uma boa sortear. 
+
+Oi. 
+
+Tem que ser uma boa sorte. 
+
+A gente sempre a gente sempre considera que daí, né, pensando no melhor dos casos, a gente vai ter um algoritmo n log n, né, para para ordenar isso daí. E realmente ele tem ele tem algoritmos de ordenação implementados dentro que são bem eficientes, né? Tanto é que a gente consegue fazer ordenação de um negócio desse que é muita coisa. É, ele falou um 
+
+o broadcast ele acontece na partição, o hash que a gente tinha 
+
+comentado, você tinha comentado, o shuffle também. 
+
+O shuffle não, 
+
+não, 
+
+o shuffle ele vai acontecer na partição, mas o que que ele vai acontecer? O shuffle, como eu tenho duas tabelas muito grandes, eh, ali para eu eu vou ter que fazer um particionamento que eu garanto que as chaves, as a chave de conta, tanto de transações quanto de contas, eu consiga fazer uma junção em uma partição só. Então, que elas combinem, vamos dizer assim, em uma partição só, certo? 
+
+Para eu conseguir fazer isso, então eu consigo que movimento, isso daqui já tá particionado de fato. Daí ele começa a pegar data de cada uma das partições, verificar se ele consegue eh não fazer a junção de fato, mas como fazer esse reparticionamento baseado nesse e daí início ele vai ficar movimentando dados. Então esse é o chama, ó. Esse é o de chama, 
+
+tá? E daí em cada participão ele vai executar o algoritmo. Então poderia ele poderia, por exemplo, ele vai, por exemplo, possuir uma tabela R alimente. 
+
+O objetivo no final deixar tudo em uma partição só. 
+
+Não, não vai, não vai ficar tudo numa partição só. Ele vai ficar em vez de ficar em parições diferentes no final até do broadcast Jo Porque se eu tiver uma tabela muito grande, daí ele vai ficar o resultado nas partições daquela tabela maior, 
+
+tá? 
+
+Tá? Então não é o objetivo ter uma partição só. O objetivo é realmente executar o join e a gente conseguir ter o resultado final ali. Deu para entender, gente? 
+
+Professor esclareceu bastante. 
+
+É, 
+
+é as duas últimas aulas são excelentes para consolidar o conteúdo das demais. 
+
+Alguém tem alguma dúvida da parte que a gente já passou, que eu passei na aula passada? da parte de estruturação do algoritmo, decomposição de dados, alguma coisa assim. Alguém tem alguma dúvida de lá? Eu acho que é uma dúvida. Esqueci. E eu acho que é justamente na hora da a decomposição. Em seguida, a gente vai fazer a Deixa eu aqui o 
+
+gente, aquela parte lá, como eu mostrei nos exercícios anterior, Eu vou cobrar mais a parte conceitual mesmo, porque vocês estão fazendo o trabalho, né? Então é mais parecido ali com tendo esse tipo de trabalho, esse código e do código. Faça a o gráfico de dependência de dados, quais tarefas podem ser executadas de paralela? Tô usando decomposição de dados ou decomposição de tarefas, né? Explique o porquê daí nesse tipo de coisa. 
+
+Balanceamento. 
+
+Balanceamento. Sim. da aula se até que por último, né, professora? 
+
+Sim. 
+
+Seis pra frente, né? 
+
+Eu acho não tem uma parte na cinco também. Não lembro a pergunta. Certo que não sei postar nada. 
+
+É a é seis. É a partir das 6\. Assim que eu passei só alguns slides de introdução. Tá? Então, a partir das seis, nos cinco tem os livros, os capítulos dos livros que eu retirei esse material, tá? Então, quem quiser ver o livro, 
+
+só não dá tempo nem de ver os slides. Quem não viu nada não dá tempo nem de ver os slides. Pensa pelo lado bom, tá acabando. 
+
+Pensa pelo lado bom, tá acabando. E vocês pegaram o pior horário possível para ter essa aula. que é sexta-feira, duas duas seguidas. Eu já fiquei sabendo que ano que vem não vai ser esse horário. E quando não é sexta, é quinta antes do feriado. Olha só que coisa, né? 
+
+Mas gente, vocês preferiam ter a aula agora das 7:15 ou pegar a aula do Davi até às 10:30 para ver aula do Davi. Pegar aula do 
+
+sexta-feira tinha que ser o under. 
+
+Nossa senhora. 
+
+Senhor decomposição, só vai cobrar de dados e tarefas, né? Você não vai cobrar o É 
+
+só só dados e tarefas. 
+
+E daí divisão em conquista, paralelismo de tarefas, eh o geométrico e o recursivo para dar, 
+
+tá? Então esses quatro tipos de estrutura de algoritmo 
+
+é granularidade, balançamento de carga, mapeamento balançamento. A gente vai ver o quê? 
+
+Ah, é o que eu posso cobrar de vocês é mais a parte conceitual mesmo. O que que é um balanceamento de carga estático, dinâmic qual que é a vantagem de um, qual que é a desvantagem de outro, né? Esse tipo de coisa, tá? Então, porque aplicado mesmo não tem como, ao menos que eu passe código, eu não não tem como eu aplicar aqui, né? Então, eu não vou passar código também porque senão fica muito extenso a prova, já tem muito conteúdo. 
+
+É, nós vamos acabar com o código, né? 
+
+Oi. 
+
+Acabar com o código na prova. 
+
+Acabar com não, máximo que nem eu falei pr vocês, o máximo que eu vou colocar é o par. Tá. Ah, gente, aqui eh, só para fechar aqui, eh, a gente fez uma um exercício ali do Spark baseado em RDD, né? Só do Dag. Aqui tem um, meu Deus, 
+
+não quer nem mostrar 
+
+não. Não quer nem mostrar que é um sinal. São sinal. 
+
+Aqui tem um exercício, gente, eh, trabalhando sobre o código do do dos data frame lá do Spark Ciclo, tá? E daí aqui o que que diferencia lá? Perguntei dos dados, né? Aqui eu vou perguntar em termos de consulta de relacional, né? Então aqui tá falando ali que tem eu tenho uma relação clientes eh filtrados que daí isso, essa transformação aqui, ela é equivalente a uma consulta em álgebra relacional. 
+
+Qual é a consulta? 
+
+Qual é a consulta? Exatamente. examente esse tipo de exercício, tá? Que é exatamente o que a gente tá que tá propondo aqui. Então, no caso aqui a consulta é sobre o resultado, né? Qual seria uma consulta escrita em algebra relacional equivalente a este código que seria sobre o resultado? Aqui no caso, 
+
+professor, esse é um resultado, esse é um exercício dificilho. 
+
+Vocês acham difícil? 
+
+Não, é fácil agora a gente tá vendo, mas imagina como você já viu toda conteú de comunicação. 
+
+É difícil responder isso aí é um exercício extremamente difícil. Eu 
+
+eu vou falar uma coisa que é uma coisa bastante importante que a gente trabalha quando a gente trabalha com com m de dados, com com consulta em geral, é sobre a diferenciação entre consultas que a gente realmente utiliza implemento, né, um SPL da vida, uma transformação desse do Sparkle e daí mudar aquela chavinha para como é que isso é equivalente a isso. No caso da álgebra relacional é o mais direto possível. Porque realmente é como tá sendo representado dentro do banco. Então essa daqui é mais fácil. Vocês vão ver, 
+
+mas tem que mudar uma chavinha porque agora você tem que pensar em termos de relação, não é exatamente da mesma forma que vocês viram lá o SQL, até mesmo porque a sintaxe é bem diferente, né? Eh, e tem outros mais difíceis que geralmente em banking a gente também vê cálculo relacional de tuplas, que daí é o que a gente fala que é uma linguagem eh ainda mais alto nível que você expressa, não ex amente a operação que você vai realizar, você só descreve o que você quer consultar, entendeu? Mas a gente faz isso para desapoplar o nível de eh pedir uma informação com a implementação de fato. Então assim, tem todo esse tipo de coisa, só que para vocês aprenderem tem que virar uma chavinha, é difícil, não é não é fácil. 
+
+Mas uma vez vocês aprendem real para relacionar, vocês deem o plano do banco. Bom, 
+
+não é Então, toda vez que vocês lá no futuro quando vocês forem aí otimizador DBA, otimizador lá de banco lá a Maró para vender os microscredos. Eh, vocês vão conseguir ler o plano do banco, pelo menos a partir disso. Muito bom. 
+
+Fechou, gente. 
+
+Ótimo, professora. Obrigado.
